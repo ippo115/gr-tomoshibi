@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GR Core for Studio 〈灯 / TOMOSHIBI〉</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Noto+Serif+JP:wght@300;400;500;600&family=Shippori+Mincho:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#ffffff;-webkit-font-smoothing:antialiased;}
+  *{box-sizing:border-box;}
+  ::selection{background:rgba(232,106,16,.18);}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.14);border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  input::placeholder{color:#9a9082;font-family:'Noto Serif JP',serif;}
+  body{font-family:'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif;color:#1a1a1a;line-height:1.8;}
+
+  .app{display:flex;height:100vh;overflow:hidden;background:#fff;}
+
+  /* ══ sidebar ══ */
+  .backdrop{position:fixed;inset:0;background:rgba(26,26,26,.32);z-index:60;display:none;}
+  .sidebar{position:relative;left:0;top:0;bottom:0;z-index:70;width:268px;height:100%;flex-shrink:0;display:flex;flex-direction:column;background:rgba(250,247,242,.92);border-right:1px solid rgba(0,0,0,.08);}
+  .sidebar.hidden{display:none;}
+  .sb-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 10px;}
+  .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:#1a1a1a;cursor:pointer;}
+  .logo-mark{width:28px;height:28px;border-radius:50%;background:#e86a10;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Shippori Mincho',serif;font-size:.8rem;font-weight:700;flex-shrink:0;}
+  .logo-name{font-family:'Shippori Mincho',serif;font-weight:700;font-size:.92rem;letter-spacing:.05em;display:block;line-height:1.3;}
+  .logo-sub{font-family:'EB Garamond',serif;font-size:.68rem;letter-spacing:.16em;color:#b88a3c;display:block;line-height:1.3;}
+  .icon-btn{width:30px;height:30px;border:none;background:transparent;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#8a8378;}
+  .icon-btn:hover{background:rgba(0,0,0,.06);color:#e86a10;}
+  .sb-icon{display:block;width:14px;height:12px;border:1.5px solid currentColor;border-radius:3px;position:relative;}
+  .sb-icon::after{content:'';position:absolute;left:4px;top:-1.5px;bottom:-1.5px;width:1.5px;background:currentColor;}
+  .newchat-wrap{padding:8px 14px 14px;}
+  .newchat{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 12px;border:1px solid rgba(232,106,16,.55);border-radius:8px;background:transparent;cursor:pointer;font-family:'Shippori Mincho',serif;font-weight:600;font-size:.88rem;letter-spacing:.12em;color:#c05708;}
+  .newchat:hover{background:#e86a10;color:#fff;}
+  .newchat .plus{font-family:'EB Garamond',serif;font-size:1.05rem;line-height:1;}
+  .sb-scroll{flex:1;overflow-y:auto;padding:0 10px 16px;}
+  .sb-label{margin:10px 8px 6px;font-family:'EB Garamond',serif;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:#9a9082;}
+  .sb-label.mt{margin-top:20px;}
+  .buddy{width:100%;display:flex;align-items:center;gap:11px;padding:8px 10px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.86rem;color:#3c382f;text-align:left;}
+  .buddy:hover{background:rgba(232,106,16,.07);color:#c05708;}
+  .buddy .dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;opacity:.85;}
+  .buddy .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .month-label{margin:22px 8px 6px;display:flex;align-items:center;gap:10px;font-family:'Shippori Mincho',serif;font-size:.72rem;letter-spacing:.2em;color:#9a9082;}
+  .month-label .line{flex:1;height:1px;background:rgba(0,0,0,.08);}
+  .hist{position:relative;display:flex;align-items:center;width:100%;border-radius:8px;}
+  .hist>button.title{flex:1;display:block;padding:8px 10px;border:none;background:transparent;border-radius:8px;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.85rem;color:#54504a;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+  .hist.active>button.title{background:rgba(232,106,16,.09);}
+  .hist:hover>button.title{background:rgba(232,106,16,.07);color:#c05708;}
+  .hist .actions{display:none;position:absolute;right:2px;gap:1px;}
+  .hist:hover .actions{display:flex;}
+  .hist .actions button{border:none;background:rgba(250,247,242,.9);cursor:pointer;color:#9a9082;font-size:.72rem;padding:3px 4px;border-radius:5px;}
+  .hist .actions button:hover{color:#e86a10;background:rgba(232,106,16,.1);}
+  .hist .pin-btn{display:none;position:absolute;right:4px;border:none;background:transparent;cursor:pointer;color:#caa15a;font-size:.72rem;padding:4px;}
+  .send.stop{background:#b00020;}
+  .send.stop:hover{background:#8a0018;}
+  .arch-toggle{margin:18px 8px 4px;font-family:'EB Garamond',serif;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#b5aa99;cursor:pointer;user-select:none;}
+  .arch-toggle:hover{color:#c05708;}
+  .edit-area{width:100%;border:1px solid rgba(232,106,16,.4);border-radius:12px;padding:10px 14px;font-family:'Noto Serif JP',serif;font-size:.94rem;line-height:2;resize:vertical;min-height:60px;outline:none;}
+  .edit-btns{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;}
+  .edit-btns button{border-radius:8px;padding:5px 14px;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.78rem;}
+  .edit-btns .save{border:none;background:#e86a10;color:#fff;}
+  .edit-btns .cxl{border:1px solid rgba(0,0,0,.14);background:#fff;color:#54504a;}
+  .hist:hover .pin-btn{display:block;}
+  .pinned-item .diamond{color:#caa15a;font-size:.7rem;flex-shrink:0;margin-left:10px;}
+  .pinned-item>button.title{display:flex;align-items:center;gap:11px;}
+  .sb-foot{border-top:1px solid rgba(0,0,0,.08);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:#54504a;color:#f5efe4;display:flex;align-items:center;justify-content:center;font-family:'Shippori Mincho',serif;font-size:.8rem;font-weight:600;flex-shrink:0;}
+  .sb-foot .who{min-width:0;flex:1;}
+  .sb-foot .who-name{display:block;font-family:'Shippori Mincho',serif;font-weight:600;font-size:.85rem;letter-spacing:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sb-foot .logout{flex-shrink:0;}
+  .sb-foot .who-mail{display:block;font-family:'EB Garamond',serif;font-size:.72rem;color:#9a9082;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .logout{border:none;background:transparent;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.72rem;color:#9a9082;letter-spacing:.08em;padding:2px 4px;}
+  .logout:hover{color:#e86a10;}
+
+  /* ══ main ══ */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;background:#fff;}
+  header.top{position:relative;z-index:50;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:12px 18px;border-bottom:1px solid rgba(0,0,0,.05);background:rgba(255,255,255,.9);}
+  .head-left{display:flex;align-items:center;gap:10px;}
+  .head-title{font-family:'Shippori Mincho',serif;font-weight:700;font-size:.92rem;letter-spacing:.05em;}
+  .head-title .sub{font-family:'EB Garamond',serif;font-weight:500;font-size:.78rem;letter-spacing:.14em;color:#b88a3c;}
+  .model-btn{display:flex;align-items:center;gap:10px;padding:8px 14px;border:none;border-radius:10px;background:transparent;cursor:pointer;font-family:'Shippori Mincho',serif;font-weight:600;font-size:.95rem;letter-spacing:.04em;color:#1a1a1a;}
+  .model-btn:hover{background:rgba(232,106,16,.07);}
+  .model-chip{width:22px;height:22px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'EB Garamond',serif;font-size:.72rem;font-weight:600;}
+  .model-caret{font-size:.6rem;color:#9a9082;}
+  .menu-overlay{position:fixed;inset:0;z-index:80;}
+  .model-menu{position:absolute;z-index:90;top:58px;left:50%;transform:translateX(-50%);width:min(340px,92vw);max-height:min(560px,68vh);overflow-y:auto;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:14px;box-shadow:0 30px 70px -28px rgba(0,0,0,.35);padding:8px;animation:fadeUp .22s ease;}
+  .model-menu .grp{margin:10px 12px 4px;font-family:'EB Garamond',serif;font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:#9a9082;}
+  .model-item{width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;border:none;background:transparent;border-radius:9px;cursor:pointer;text-align:left;}
+  .model-item:hover{background:rgba(232,106,16,.07);}
+  .model-item .chip{width:26px;height:26px;border-radius:50%;flex-shrink:0;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'EB Garamond',serif;font-size:.8rem;font-weight:600;}
+  .model-item .nm{flex:1;font-family:'Shippori Mincho',serif;font-weight:600;font-size:.9rem;color:#1a1a1a;}
+  .model-item .check{color:#e86a10;font-size:.9rem;}
+
+  /* ══ empty state ══ */
+  .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px clamp(18px,4vw,48px) 48px;overflow-y:auto;background:radial-gradient(90% 60% at 50% -10%, rgba(255,205,128,.22), transparent 60%);}
+  .empty .kicker{margin:0 0 10px;font-family:'EB Garamond',serif;font-size:.78rem;letter-spacing:.3em;text-transform:uppercase;color:#b88a3c;}
+  .empty h1{margin:0 0 8px;font-family:'Shippori Mincho',serif;font-weight:700;font-size:clamp(1.5rem,3.2vw,2.1rem);letter-spacing:.1em;color:#1a1a1a;text-align:center;}
+  .empty .lede{margin:0 0 36px;font-family:'Noto Serif JP',serif;font-weight:300;font-size:.9rem;letter-spacing:.08em;color:#8a8378;text-align:center;}
+  .composer{width:100%;max-width:720px;background:#fff;border:1px solid rgba(0,0,0,.09);border-radius:18px;box-shadow:0 24px 50px -30px rgba(0,0,0,.28);padding:16px 16px 12px;}
+  .composer input,.composer textarea{width:100%;border:none;outline:none;background:transparent;font-family:'Noto Serif JP',serif;font-size:1rem;color:#1a1a1a;padding:4px 6px 14px;resize:none;line-height:1.9;max-height:200px;overflow-y:auto;}
+  .composer .row,.chat-composer .row{display:flex;align-items:center;justify-content:space-between;}
+  .attach{width:34px;height:34px;border:1px solid rgba(0,0,0,.12);border-radius:50%;background:transparent;cursor:pointer;color:#54504a;font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .attach:hover{border-color:#e86a10;color:#e86a10;}
+  .send{width:38px;height:38px;border:none;border-radius:50%;background:#e86a10;color:#fff;cursor:pointer;font-size:1.05rem;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 26px -12px rgba(232,106,16,.7);}
+  .send:hover{background:#d65f08;transform:translateY(-1px);}
+  .send:disabled{opacity:.5;cursor:default;transform:none;}
+  .suggestions{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;width:100%;max-width:720px;margin-top:22px;}
+  .sug{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1px solid rgba(0,0,0,.09);border-radius:12px;background:#fff;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.88rem;color:#3c382f;text-align:left;}
+  .sug:hover{border-color:rgba(232,106,16,.5);color:#c05708;box-shadow:0 14px 30px -22px rgba(232,106,16,.5);}
+  .sug .dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;opacity:.85;}
+
+  /* ══ chat state ══ */
+  .chat{flex:1;display:flex;flex-direction:column;min-height:0;}
+  .chat-scroll{flex:1;overflow-y:auto;padding:32px clamp(18px,4vw,48px) 12px;}
+  .chat-inner{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:30px;}
+  .msg-user{display:flex;justify-content:flex-end;}
+  .msg-user .bubble{max-width:78%;background:rgba(250,247,242,1);border:1px solid rgba(0,0,0,.06);border-radius:16px 16px 4px 16px;padding:13px 18px;font-size:.94rem;color:#1a1a1a;line-height:2;white-space:pre-wrap;}
+  .msg-ai{display:flex;flex-direction:column;gap:6px;}
+  .msg-ai .meta{display:flex;align-items:center;gap:9px;}
+  .msg-ai .meta .chip{width:20px;height:20px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'EB Garamond',serif;font-size:.66rem;font-weight:600;}
+  .msg-ai .meta .mname{font-family:'EB Garamond',serif;font-size:.78rem;letter-spacing:.1em;color:#9a9082;}
+  .msg-ai .meta .streaming-note{font-family:'Noto Serif JP',serif;font-size:.72rem;letter-spacing:.14em;color:#b88a3c;}
+  .msg-ai .body{padding-left:29px;font-size:.94rem;color:#262019;}
+  .msg-ai .body h3{margin:20px 0 8px;font-family:'Shippori Mincho',serif;font-weight:700;font-size:1.06rem;letter-spacing:.06em;color:#1a1a1a;}
+  .msg-ai .body p{margin:6px 0;line-height:2.1;}
+  .msg-ai .body .li{display:flex;gap:10px;margin:4px 0 4px 4px;line-height:2;}
+  .msg-ai .body .li .bullet{color:#caa15a;flex-shrink:0;}
+  .codeblock{margin:14px 0;border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,.1);}
+  .codeblock .bar{display:flex;align-items:center;justify-content:space-between;background:#3b342c;padding:7px 14px;}
+  .codeblock .lang{font-family:'EB Garamond',serif;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:#caa15a;}
+  .codeblock .copy{border:none;background:transparent;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.72rem;letter-spacing:.1em;color:#b5aa99;}
+  .codeblock .copy:hover{color:#fff;}
+  .codeblock pre{margin:0;background:#2b2620;color:#ece4d4;font-family:'SFMono-Regular',Consolas,'Liberation Mono',monospace;font-size:.8rem;line-height:1.9;padding:14px 16px;overflow-x:auto;white-space:pre;}
+  code.inline{background:rgba(0,0,0,.06);border-radius:4px;padding:1px 5px;font-family:'SFMono-Regular',Consolas,monospace;font-size:.85em;}
+  .cursor{display:inline-block;width:9px;height:18px;background:#e86a10;vertical-align:-3px;animation:blink 1s steps(1) infinite;}
+  .msg-actions{display:flex;gap:16px;padding-left:29px;margin-top:2px;}
+  .msg-actions button{border:none;background:transparent;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.76rem;letter-spacing:.12em;color:#9a9082;padding:2px 0;}
+  .msg-actions button:hover{color:#e86a10;}
+  .chat-composer-wrap{padding:10px clamp(18px,4vw,48px) 22px;background:linear-gradient(to top,#fff 70%,rgba(255,255,255,0));}
+  .chat-composer{max-width:760px;margin:0 auto;background:#fff;border:1px solid rgba(0,0,0,.09);border-radius:18px;box-shadow:0 24px 50px -30px rgba(0,0,0,.28);padding:14px 14px 10px;}
+  .chat-composer input,.chat-composer textarea{width:100%;border:none;outline:none;background:transparent;font-family:'Noto Serif JP',serif;font-size:.98rem;color:#1a1a1a;padding:2px 6px 12px;resize:none;line-height:1.9;max-height:200px;overflow-y:auto;}
+
+  /* ══ artifact preview ══ */
+  .artifact-pane{position:fixed;top:0;right:0;bottom:0;width:min(52vw,860px);background:#fff;border-left:1px solid rgba(0,0,0,.1);box-shadow:-20px 0 50px -30px rgba(0,0,0,.3);z-index:150;display:none;flex-direction:column;}
+  .artifact-pane.open{display:flex;animation:fadeUp .2s ease;}
+  .artifact-head{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid rgba(0,0,0,.08);background:rgba(250,247,242,.6);}
+  .artifact-title{flex:1;font-family:'Shippori Mincho',serif;font-weight:600;font-size:.9rem;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .artifact-btn{border:1px solid rgba(0,0,0,.12);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.78rem;color:#3c382f;flex-shrink:0;}
+  .artifact-btn:hover{border-color:#e86a10;color:#c05708;}
+  .artifact-pane iframe{flex:1;border:none;width:100%;background:#fff;}
+  @media(max-width:900px){.artifact-pane{width:100vw;}}
+
+  /* ══ ingest dialog ══ */
+  .ingest-mask{position:fixed;inset:0;background:rgba(26,26,26,.32);z-index:180;display:none;align-items:center;justify-content:center;}
+  .ingest-mask.open{display:flex;}
+  .ingest-card{width:min(560px,92vw);background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:16px;box-shadow:0 30px 70px -28px rgba(0,0,0,.35);padding:22px 22px 18px;animation:fadeUp .2s ease;}
+  .ingest-card h2{margin:0 0 4px;font-family:'Shippori Mincho',serif;font-weight:700;font-size:1rem;letter-spacing:.05em;}
+  .ingest-card .sub{margin:0 0 16px;font-size:.78rem;color:#8a8378;}
+  .ingest-card label{display:block;font-size:.78rem;color:#54504a;margin:12px 2px 4px;letter-spacing:.04em;}
+  .ingest-card input[type=text],.ingest-card textarea,.ingest-card select{width:100%;border:1px solid rgba(0,0,0,.14);border-radius:9px;padding:9px 12px;font-family:'Noto Serif JP',serif;font-size:.88rem;outline:none;background:#fff;}
+  .ingest-card textarea{min-height:120px;resize:vertical;}
+  .ingest-card input:focus,.ingest-card textarea:focus,.ingest-card select:focus{border-color:rgba(232,106,16,.55);}
+  .ingest-drop{border:1.5px dashed rgba(0,0,0,.18);border-radius:10px;padding:14px;text-align:center;color:#8a8378;font-size:.82rem;cursor:pointer;}
+  .ingest-drop:hover{border-color:#e86a10;color:#c05708;}
+  .ingest-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+  .ingest-actions button{border-radius:9px;padding:9px 18px;cursor:pointer;font-family:'Shippori Mincho',serif;font-weight:600;font-size:.85rem;letter-spacing:.08em;}
+  .ingest-actions .cancel{border:1px solid rgba(0,0,0,.14);background:#fff;color:#54504a;}
+  .ingest-actions .go{border:none;background:#e86a10;color:#fff;}
+  .ingest-actions .go:disabled{opacity:.5;cursor:default;}
+
+  /* ══ login ══ */
+  .login{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:radial-gradient(90% 60% at 50% -10%, rgba(255,205,128,.22), transparent 60%), #fff;}
+  .login-card{width:min(400px,92vw);background:#fff;border:1px solid rgba(0,0,0,.09);border-radius:18px;box-shadow:0 24px 50px -30px rgba(0,0,0,.28);padding:36px 32px;animation:fadeUp .3s ease;text-align:center;}
+  .login-mark{width:56px;height:56px;border-radius:50%;background:#e86a10;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Shippori Mincho',serif;font-size:1.5rem;font-weight:700;margin:0 auto 14px;}
+  .login-card h1{margin:0 0 4px;font-family:'Shippori Mincho',serif;font-weight:700;font-size:1.1rem;letter-spacing:.08em;}
+  .login-card .sub{margin:0 0 26px;font-family:'EB Garamond',serif;font-size:.75rem;letter-spacing:.2em;color:#b88a3c;}
+  .login-card input{width:100%;border:1px solid rgba(0,0,0,.12);border-radius:9px;padding:11px 14px;margin-bottom:10px;font-family:'Noto Serif JP',serif;font-size:.9rem;outline:none;}
+  .login-card input:focus{border-color:rgba(232,106,16,.55);}
+  .login-btn{width:100%;padding:12px;border:none;border-radius:9px;background:#e86a10;color:#fff;cursor:pointer;font-family:'Shippori Mincho',serif;font-weight:600;font-size:.9rem;letter-spacing:.12em;margin-top:4px;}
+  .login-btn:hover{background:#d65f08;}
+  .google-btn{width:100%;padding:11px;border:1px solid rgba(0,0,0,.14);border-radius:9px;background:#fff;color:#3c382f;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:.86rem;letter-spacing:.06em;margin-top:10px;}
+  .google-btn:hover{border-color:rgba(232,106,16,.5);color:#c05708;}
+  .login-err{margin-top:12px;font-size:.78rem;color:#b00020;min-height:1.2em;}
+  .banner{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:300;background:#2a1215;color:#ff8a80;font-size:.8rem;padding:10px 18px;border-radius:10px;border:1px solid #5c2b2e;max-width:90vw;display:none;}
+
+  @media (max-width:759px){
+    .sidebar{position:fixed;}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app" style="display:none;">
+  <div class="backdrop" id="backdrop"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <a class="logo" id="logoHome">
+        <span class="logo-mark">灯</span>
+        <span>
+          <span class="logo-name">GR Core for Studio</span>
+          <span class="logo-sub">〈灯 / TOMOSHIBI〉</span>
+        </span>
+      </a>
+      <button class="icon-btn" id="sbClose" title="サイドバーを閉じる"><span class="sb-icon"></span></button>
+    </div>
+    <div class="newchat-wrap">
+      <button class="newchat" id="newChat"><span class="plus">+</span>チャットを新規作成</button>
+    </div>
+    <div class="sb-scroll" id="sbScroll"></div>
+    <div class="sb-foot">
+      <span class="avatar" id="avatar">?</span>
+      <span class="who">
+        <span class="who-name" id="whoName"></span>
+        <span class="who-mail" id="whoMail"></span>
+      </span>
+      <button class="logout" id="logout">ログアウト</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="head-left" id="headLeft"></div>
+      <button class="model-btn" id="modelBtn">
+        <span class="model-chip" id="modelChip">C</span>
+        <span id="modelName"></span>
+        <span class="model-caret">▼</span>
+      </button>
+      <div></div>
+    </header>
+    <div id="modelMenuWrap" style="display:none;">
+      <div class="menu-overlay" id="menuOverlay"></div>
+      <div class="model-menu" id="modelMenu"></div>
+    </div>
+
+    <div id="hibikiBar" style="display:none;">
+      <div class="hb-mandate">HIBIKI｜CMO職を執行中 ／ 決定者は 創ちゃん・ぐっさん・マーケッター の3名（AIは提案のみ）</div>
+      <div class="hb-tabs">
+        <button data-tab="chat" class="on">対話</button>
+        <button data-tab="approval">承認 <span id="hbApvBadge" class="hb-badge" style="display:none;"></span></button>
+        <button data-tab="gogyo">五行</button>
+      </div>
+    </div>
+
+    <main class="empty" id="emptyView">
+      <p class="kicker">GR Core for Studio 〈灯 / TOMOSHIBI〉</p>
+      <h1>今日は、何から始めますか。</h1>
+      <p class="lede">モデルを選んで、軽やかに。</p>
+      <div class="composer">
+        <textarea id="emptyInput" rows="1" placeholder="灯（TOMOSHIBI）と会話する"></textarea>
+        <div class="row">
+          <button class="attach ingest-btn" title="ナレッジに取り込む（ファイル/テキスト）">+</button>
+          <button class="send" id="emptySend" title="送信">→</button>
+        </div>
+      </div>
+      <div class="suggestions" id="suggestions"></div>
+    </main>
+
+    <main class="chat" id="chatView" style="display:none;">
+      <div class="chat-scroll" id="chatScroll">
+        <div class="chat-inner" id="chatInner"></div>
+      </div>
+      <div class="chat-composer-wrap">
+        <div class="chat-composer">
+          <textarea id="chatInput" rows="1" placeholder="灯（TOMOSHIBI）と会話する"></textarea>
+          <div class="row">
+            <button class="attach ingest-btn" title="ナレッジに取り込む（ファイル/テキスト）">+</button>
+            <button class="send" id="chatSend" title="送信">→</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <main class="hbpane" id="approvalView" style="display:none;">
+      <div class="hb-scroll">
+        <h2 class="hb-h">承認インボックス <span class="hb-sub" id="apvLaneLabel"></span></h2>
+        <p class="hb-note">あなたのレーンの案件のみ表示されます。一括承認はありません（承認の形骸化防止）。</p>
+        <div id="apvList"></div>
+      </div>
+    </main>
+
+    <main class="hbpane" id="gogyoView" style="display:none;">
+      <div class="hb-scroll">
+        <h2 class="hb-h">五行 — エージェントの気の流れ</h2>
+        <p class="hb-note">実線＝相生（パイプライン順序：水→木→火→土→金→水）。水剋火＝コピーは観測・分析の根拠と突合してから承認へ。</p>
+        <div class="gogyo-ring" id="gogyoRing"></div>
+        <div id="gogyoTasks"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<style>
+  #hibikiBar{border-bottom:1px solid rgba(0,0,0,.08);background:linear-gradient(180deg,#fdf6e8,#faf7f2);}
+  .hb-mandate{padding:8px 22px 2px;font-family:'Shippori Mincho',serif;font-size:.78rem;letter-spacing:.12em;color:#8a6d1f;}
+  .hb-tabs{display:flex;gap:4px;padding:6px 18px 0;}
+  .hb-tabs button{border:none;background:none;cursor:pointer;font-family:'Shippori Mincho',serif;font-size:.88rem;letter-spacing:.14em;color:#9a9082;padding:8px 16px;border-bottom:2px solid transparent;}
+  .hb-tabs button.on{color:#8a6d1f;border-bottom-color:#b8860b;}
+  .hb-badge{display:inline-block;min-width:18px;padding:1px 6px;border-radius:9px;background:#b8860b;color:#fff;font-size:.7rem;text-align:center;}
+  .hbpane{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+  .hb-scroll{max-width:860px;width:100%;margin:0 auto;padding:26px 24px 60px;}
+  .hb-h{font-family:'Shippori Mincho',serif;font-size:1.15rem;letter-spacing:.1em;color:#3c382f;margin-bottom:4px;}
+  .hb-sub{font-size:.8rem;color:#b8860b;margin-left:10px;}
+  .hb-note{font-size:.78rem;color:#9a9082;margin-bottom:18px;line-height:1.8;}
+  .apv-card{border:1px solid rgba(0,0,0,.1);border-radius:10px;background:#fff;padding:16px 18px;margin-bottom:14px;}
+  .apv-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+  .apv-lane{font-size:.7rem;letter-spacing:.1em;color:#fff;border-radius:4px;padding:2px 8px;font-family:'Shippori Mincho',serif;}
+  .apv-kind{font-size:.7rem;color:#6b6455;border:1px solid rgba(0,0,0,.15);border-radius:4px;padding:1px 7px;}
+  .apv-status{font-size:.72rem;margin-left:auto;color:#9a9082;}
+  .apv-title{font-family:'Shippori Mincho',serif;font-size:1rem;color:#1a1a1a;margin-bottom:6px;}
+  .apv-flags{margin:6px 0;}
+  .apv-flags span{display:inline-block;background:#fbe9e7;color:#c62828;font-size:.72rem;border-radius:4px;padding:2px 8px;margin:0 6px 4px 0;}
+  .apv-ok{display:inline-block;background:#e8f5e9;color:#1a7f64;font-size:.72rem;border-radius:4px;padding:2px 8px;}
+  .apv-body{font-size:.86rem;line-height:1.9;color:#3c382f;white-space:pre-wrap;max-height:220px;overflow:hidden;position:relative;border-left:3px solid rgba(184,134,11,.35);padding-left:12px;margin:8px 0;}
+  .apv-body.open{max-height:none;}
+  .apv-more{background:none;border:none;color:#b8860b;font-size:.76rem;cursor:pointer;padding:2px 0;}
+  .apv-evi{font-size:.76rem;color:#6b6455;background:#faf7f0;border-radius:6px;padding:8px 12px;margin:8px 0;line-height:1.8;white-space:pre-wrap;}
+  .apv-actions{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;}
+  .apv-actions button{cursor:pointer;border-radius:7px;padding:7px 16px;font-size:.82rem;border:1px solid rgba(0,0,0,.15);background:#fff;color:#3c382f;}
+  .apv-actions .approve{background:#1a7f64;border-color:#1a7f64;color:#fff;}
+  .apv-actions .reject{border-color:#c62828;color:#c62828;}
+  .apv-reject-box{width:100%;margin-top:8px;}
+  .apv-reject-box textarea{width:100%;min-height:64px;border:1px solid rgba(0,0,0,.18);border-radius:7px;padding:8px 10px;font-size:.84rem;font-family:inherit;}
+  .apv-reject-box .hint{font-size:.72rem;color:#b8860b;margin:4px 0;}
+  .gogyo-ring{position:relative;width:min(420px,90vw);height:min(420px,90vw);margin:10px auto 20px;}
+  .gogyo-node{position:absolute;width:96px;padding:10px 6px;text-align:center;border-radius:12px;border:1px solid rgba(0,0,0,.12);background:#fff;transform:translate(-50%,-50%);}
+  .gogyo-node .el{font-family:'Shippori Mincho',serif;font-size:1.15rem;}
+  .gogyo-node .nm{font-size:.72rem;color:#6b6455;display:block;margin-top:2px;}
+  .gogyo-node .st{font-size:.66rem;display:block;margin-top:4px;border-radius:4px;padding:1px 4px;}
+  .st-idle{background:#f0ede6;color:#9a9082;}
+  .st-run{background:#fff3df;color:#c05708;}
+  .st-clar{background:#e3f2fd;color:#2a6dd6;}
+  .st-err{background:#fbe9e7;color:#c62828;}
+  .gogyo-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;font-family:'Shippori Mincho',serif;color:#8a6d1f;}
+  .clarify-box{margin:8px 0 4px 29px;padding:12px 16px;border:1px solid rgba(42,109,214,.35);border-radius:10px;background:#f4f8ff;max-width:560px;}
+  .clarify-box .q{font-size:.86rem;color:#2a4a80;margin-bottom:8px;line-height:1.8;}
+  .clarify-box button{display:block;width:100%;text-align:left;margin:5px 0;padding:8px 12px;border:1px solid rgba(42,109,214,.4);border-radius:7px;background:#fff;color:#1a3a66;font-size:.84rem;cursor:pointer;}
+  .clarify-box button:hover{background:#e8f0fe;}
+</style>
+
+<div class="artifact-pane" id="artifactPane">
+  <div class="artifact-head">
+    <span class="artifact-title" id="artifactTitle">プレビュー</span>
+    <button class="artifact-btn" id="artifactSave">下書き保存</button>
+    <button class="artifact-btn" id="artifactLearn" title="この成果物を手本として学習させ、次回以降の生成に反映します">手本にする</button>
+    <button class="artifact-btn" id="artifactPublish" style="border-color:rgba(232,106,16,.55);color:#c05708;">公開URLを発行</button>
+    <button class="artifact-btn" id="artifactDl">ダウンロード</button>
+    <button class="artifact-btn" id="artifactClose">閉じる</button>
+  </div>
+  <iframe id="artifactFrame" sandbox="allow-scripts" title="生成物プレビュー"></iframe>
+</div>
+
+<div class="login" id="loginView" style="display:none;">
+  <div class="login-card">
+    <div class="login-mark">灯</div>
+    <h1>GR Core for Studio</h1>
+    <p class="sub">〈灯 / TOMOSHIBI〉 — GRメンバー専用</p>
+    <input id="loginEmail" type="email" placeholder="メールアドレス" autocomplete="username">
+    <input id="loginPass" type="password" placeholder="パスワード" autocomplete="current-password">
+    <button class="login-btn" id="loginBtn">ログイン</button>
+    <button class="google-btn" id="googleBtn">Google でログイン</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<div class="ingest-mask" id="ingestMask">
+  <div class="ingest-card">
+    <h2>ナレッジに取り込む</h2>
+    <p class="sub">LP・スライド・コピー・文章などを取り込むと、創ちゃんや各アシスタントが意味検索で参照できるようになります（社内共有ナレッジになります）。</p>
+    <label>タイトル</label>
+    <input type="text" id="ingestTitle" placeholder="例：天の岩戸開きLP / 創さんメルマガ 2026春">
+    <label>種類</label>
+    <select id="ingestTag">
+      <option value="lp">LP（ゴールデンテンプレート）</option>
+      <option value="slide">スライド</option>
+      <option value="copy">マーケコピー</option>
+      <option value="writing">ライティング（メルマガ等）</option>
+      <option value="other">その他</option>
+    </select>
+    <label>ファイル（.html / .txt / .md）または下にテキスト貼り付け</label>
+    <div class="ingest-drop" id="ingestDrop">クリックしてファイルを選ぶ／ここにドラッグ</div>
+    <input type="file" id="ingestFile" accept=".html,.htm,.txt,.md,.markdown" style="display:none;">
+    <textarea id="ingestText" placeholder="テキストを直接貼り付けてもOK"></textarea>
+    <div class="ingest-actions">
+      <button class="cancel" id="ingestCancel">キャンセル</button>
+      <button class="go" id="ingestGo">取り込む</button>
+    </div>
+  </div>
+</div>
+
+<div class="banner" id="banner"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+"use strict";
+/* ══════════ 設定 ══════════ */
+const SUPABASE_URL = "https://dwxtansttshjtapuyxap.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable__PNehob3NTs-yTtK27tnyQ_33CEpL4w";
+const API_URL = SUPABASE_URL + "/functions/v1/studio-api";
+const PUBLISH_URL = SUPABASE_URL + "/functions/v1/studio-publish";
+const INGEST_URL = SUPABASE_URL + "/functions/v1/studio-ingest";
+const CMO_URL = SUPABASE_URL + "/functions/v1/cmo-orchestrator";
+
+const MODEL_GROUPS = [
+  { label: "Claude（主・JUNDOのバックボーン）", items: [
+    { id: "claude-opus-4-8", name: "Claude Opus 4.8", g: "C", c: "#e86a10" },
+    { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", g: "C", c: "#c05708" },
+    { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", g: "C", c: "#caa15a" },
+  ]},
+  { label: "その他（副・ナレッジ検索ツール非対応）", items: [
+    { id: "gpt-5.4", name: "GPT-5.4", g: "G", c: "#1a7f64" },
+    { id: "grok-4-20-reasoning", name: "Grok 4-20 Reasoning", g: "X", c: "#1a1a1a" },
+  ]},
+];
+const ALL_MODELS = MODEL_GROUPS.flatMap(g => g.items);
+const SUGGESTIONS = [
+  { t: "文章を校正する", c: "#e86a10" },
+  { t: "会議メモを要約する", c: "#caa15a" },
+  { t: "英文メールを作成する", c: "#2a6dd6" },
+  { t: "コードをレビューする", c: "#1a7f64" },
+];
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ══════════ 状態 ══════════ */
+const S = {
+  session: null,
+  profile: null,
+  assistants: [],
+  conversations: [],
+  currentConv: null,      // conversation id
+  currentAssistant: null, // assistant id
+  messages: [],           // {role, content, model, streaming}
+  modelId: localStorage.getItem("tomoshibi_model") || "claude-opus-4-8",
+  streaming: false,
+  showArchived: false,
+  abort: null,
+  sbVisible: true,
+  isMobile: false,
+  apiKeyConfigured: true,
+};
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ══════════ 認証 ══════════ */
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { S.session = session; await boot(); }
+  else showLogin();
+  sb.auth.onAuthStateChange((_e, sess) => { S.session = sess; });
+}
+
+function showLogin() {
+  $("loginView").style.display = "flex";
+  $("app").style.display = "none";
+}
+
+$("loginBtn").addEventListener("click", doLogin);
+$("loginPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+$("googleBtn").addEventListener("click", async () => {
+  const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.href.split("#")[0] } });
+  if (error) $("loginErr").textContent = error.message;
+});
+async function doLogin() {
+  $("loginErr").textContent = "";
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: $("loginEmail").value.trim(), password: $("loginPass").value,
+  });
+  if (error) { $("loginErr").textContent = "ログインできませんでした：" + error.message; return; }
+  S.session = data.session;
+  await boot();
+}
+$("logout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+
+/* ══════════ API ══════════ */
+async function api(body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + session.access_token,
+      "apikey": SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+  return res;
+}
+
+/* ══════════ 起動 ══════════ */
+async function boot() {
+  const res = await api({ action: "bootstrap" });
+  if (res.status === 403) {
+    const j = await res.json();
+    $("loginErr").textContent = j.error || "GRメンバーとして登録されていません";
+    await sb.auth.signOut();
+    showLogin();
+    return;
+  }
+  if (!res.ok) { banner("初期化に失敗しました (" + res.status + ")"); showLogin(); return; }
+  const j = await res.json();
+  S.profile = j.profile;
+  S.assistants = j.assistants;
+  S.conversations = j.conversations;
+  refreshConversations();
+  S.apiKeyConfigured = j.api_key_configured;
+  if (!S.apiKeyConfigured) banner("⚠ ANTHROPIC_API_KEY が未設定です。管理者が Supabase Secrets に登録すると会話できるようになります。");
+
+  $("loginView").style.display = "none";
+  $("app").style.display = "flex";
+  const name = S.profile.display_name || S.profile.email;
+  $("whoName").textContent = name;
+  $("whoMail").textContent = S.profile.email;
+  $("avatar").textContent = name.charAt(0);
+
+  onResize();
+  window.addEventListener("resize", onResize);
+  renderAll();
+}
+
+function banner(msg) {
+  const b = $("banner");
+  b.textContent = msg; b.style.display = "block";
+  setTimeout(() => { b.style.display = "none"; }, 8000);
+}
+
+/* ══════════ レイアウト ══════════ */
+function onResize() {
+  const m = window.innerWidth < 760;
+  if (m !== S.isMobile) { S.isMobile = m; S.sbVisible = !m; renderLayout(); }
+}
+function renderLayout() {
+  $("sidebar").classList.toggle("hidden", !S.sbVisible);
+  $("backdrop").style.display = (S.isMobile && S.sbVisible) ? "block" : "none";
+  const hl = $("headLeft");
+  hl.innerHTML = "";
+  if (!S.sbVisible) {
+    const btn = document.createElement("button");
+    btn.className = "icon-btn"; btn.title = "サイドバーを開く";
+    btn.innerHTML = '<span class="sb-icon"></span>';
+    btn.style.width = "32px"; btn.style.height = "32px";
+    btn.addEventListener("click", toggleSidebar);
+    const t = document.createElement("span");
+    t.className = "head-title";
+    t.innerHTML = 'GR Core for Studio <span class="sub">〈灯 / TOMOSHIBI〉</span>';
+    hl.append(btn, t);
+  }
+}
+function toggleSidebar() { S.sbVisible = !S.sbVisible; renderLayout(); }
+$("sbClose").addEventListener("click", toggleSidebar);
+$("backdrop").addEventListener("click", () => { S.sbVisible = false; renderLayout(); });
+
+/* ══════════ サイドバー（実データ） ══════════ */
+function monthLabel(iso) {
+  const d = new Date(iso);
+  const now = new Date();
+  const y = d.getFullYear(), m = d.getMonth() + 1;
+  return (y === now.getFullYear()) ? `${m}月` : `${y}年${m}月`;
+}
+function renderSidebar() {
+  const el = $("sbScroll");
+  el.innerHTML = "";
+
+  if (S.assistants.length) {
+    const lbl = document.createElement("p");
+    lbl.className = "sb-label"; lbl.textContent = "Assistants";
+    el.appendChild(lbl);
+    for (const a of S.assistants) {
+      const b = document.createElement("button");
+      b.className = "buddy";
+      b.innerHTML = `<span class="dot" style="background:${esc(a.color)}"></span><span class="nm">${esc(a.name)}</span>`;
+      b.title = a.description || a.name;
+      if (a.is_console) b.innerHTML += '<span style="margin-left:auto;font-size:.62rem;color:#b8860b;letter-spacing:.08em;">CMO</span>';
+      b.addEventListener("click", () => newChatWithAssistant(a.id));
+      el.appendChild(b);
+    }
+  }
+
+  const visible = S.conversations.filter(c => !c.archived);
+  const archived = S.conversations.filter(c => c.archived);
+  const pinned = visible.filter(c => c.pinned);
+  const rest = visible.filter(c => !c.pinned);
+
+  const plbl = document.createElement("p");
+  plbl.className = "sb-label mt"; plbl.textContent = "Pinned";
+  el.appendChild(plbl);
+  if (!pinned.length) {
+    const none = document.createElement("p");
+    none.style.cssText = "margin:2px 10px;font-size:.75rem;color:#b5aa99;";
+    none.textContent = "（履歴にカーソルを合わせて ◆ で固定）";
+    el.appendChild(none);
+  }
+  pinned.forEach(c => el.appendChild(histItem(c, true)));
+
+  let lastLabel = null;
+  for (const c of rest) {
+    const lbl = monthLabel(c.updated_at);
+    if (lbl !== lastLabel) {
+      lastLabel = lbl;
+      const p = document.createElement("p");
+      p.className = "month-label";
+      p.innerHTML = `${esc(lbl)}<span class="line"></span>`;
+      el.appendChild(p);
+    }
+    el.appendChild(histItem(c, false));
+  }
+
+  if (archived.length) {
+    const t = document.createElement("p");
+    t.className = "arch-toggle";
+    t.textContent = (S.showArchived ? "▾ " : "▸ ") + "アーカイブ済み（" + archived.length + "）";
+    t.addEventListener("click", () => { S.showArchived = !S.showArchived; renderSidebar(); });
+    el.appendChild(t);
+    if (S.showArchived) archived.forEach(c => el.appendChild(histItem(c, false)));
+  }
+}
+function histItem(c, isPinned) {
+  const wrap = document.createElement("div");
+  wrap.className = "hist" + (isPinned ? " pinned-item" : "") + (S.currentConv === c.id ? " active" : "");
+  const btn = document.createElement("button");
+  btn.className = "title";
+  if (isPinned) btn.innerHTML = `<span class="diamond">◆</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(c.title)}</span>`;
+  else btn.textContent = c.title;
+  btn.addEventListener("click", () => openConversation(c.id));
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  const pin = document.createElement("button");
+  pin.textContent = c.pinned ? "◇" : "◆";
+  pin.title = c.pinned ? "固定を解除" : "固定する";
+  pin.addEventListener("click", async (e) => { e.stopPropagation(); c.pinned = !c.pinned; renderSidebar(); await api({ action: "pin", conversation_id: c.id, pinned: c.pinned }); });
+  const arch = document.createElement("button");
+  arch.textContent = c.archived ? "▲" : "▽";
+  arch.title = c.archived ? "アーカイブから戻す" : "アーカイブ";
+  arch.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const to = !c.archived; c.archived = to; renderSidebar();
+    await convApi(to ? "archive" : "unarchive", c.id);
+  });
+  const del = document.createElement("button");
+  del.textContent = "🗑";
+  del.title = "削除";
+  del.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (!confirm("この会話を削除します。よろしいですか？（会話ログ自体は監査のため保持され、一覧から消えます）")) return;
+    await convApi("delete", c.id);
+    S.conversations = S.conversations.filter(x => x.id !== c.id);
+    if (S.currentConv === c.id) showEmpty(); else renderSidebar();
+  });
+  actions.append(pin, arch, del);
+  wrap.append(btn, actions);
+  return wrap;
+}
+
+async function convApi(action, cid) {
+  const { data: { session } } = await sb.auth.getSession();
+  return fetch(SUPABASE_URL + "/functions/v1/studio-conv", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify({ action, conversation_id: cid }),
+  });
+}
+async function refreshConversations() {
+  try {
+    const res = await convApi("list", "dummy");
+    if (res.ok) { const j = await res.json(); S.conversations = j.conversations; renderSidebar(); }
+  } catch {}
+}
+
+/* ══════════ モデル切替 ══════════ */
+function currentModel() { return ALL_MODELS.find(m => m.id === S.modelId) || ALL_MODELS[0]; }
+function renderModelBtn() {
+  const m = currentModel();
+  $("modelChip").textContent = m.g;
+  $("modelChip").style.background = m.c;
+  $("modelName").textContent = m.name;
+}
+$("modelBtn").addEventListener("click", () => {
+  const w = $("modelMenuWrap");
+  w.style.display = w.style.display === "none" ? "block" : "none";
+  renderModelMenu();
+});
+$("menuOverlay").addEventListener("click", () => { $("modelMenuWrap").style.display = "none"; });
+function renderModelMenu() {
+  const el = $("modelMenu");
+  el.innerHTML = "";
+  for (const grp of MODEL_GROUPS) {
+    const p = document.createElement("p");
+    p.className = "grp"; p.textContent = grp.label;
+    el.appendChild(p);
+    for (const m of grp.items) {
+      const b = document.createElement("button");
+      b.className = "model-item";
+      b.innerHTML = `<span class="chip" style="background:${m.c}">${m.g}</span><span class="nm">${esc(m.name)}</span>` +
+        (m.id === S.modelId ? '<span class="check">✓</span>' : "");
+      b.addEventListener("click", () => {
+        S.modelId = m.id;
+        localStorage.setItem("tomoshibi_model", m.id);
+        $("modelMenuWrap").style.display = "none";
+        renderModelBtn();
+      });
+      el.appendChild(b);
+    }
+  }
+}
+
+/* ══════════ 画面切替 ══════════ */
+function showEmpty() {
+  S.currentConv = null; S.currentAssistant = null; S.messages = [];
+  $("emptyView").style.display = "flex";
+  $("chatView").style.display = "none";
+  if (typeof updateHibikiBar === "function") updateHibikiBar();
+  renderSidebar();
+}
+function showChat() {
+  $("emptyView").style.display = "none";
+  $("chatView").style.display = "flex";
+}
+$("newChat").addEventListener("click", () => { if (!S.streaming) { showEmpty(); if (S.isMobile) { S.sbVisible = false; renderLayout(); } } });
+$("logoHome").addEventListener("click", () => { if (!S.streaming) showEmpty(); });
+function newChatWithAssistant(id) {
+  if (S.streaming) return;
+  showEmpty();
+  S.currentAssistant = id;
+  const a = S.assistants.find(x => x.id === id);
+  updateHibikiBar();
+  banner(a && a.is_console
+    ? "HIBIKI（AI CMO）を開きました。決定は常に人間3名が行います。"
+    : `アシスタント「${a ? a.name : ""}」を選択しました。メッセージを送ると開始します。`);
+  if (S.isMobile) { S.sbVisible = false; renderLayout(); }
+}
+
+/* ══════════ HIBIKI（AI CMO）コンソール ══════════ */
+function hibikiAssistant() { return S.assistants.find(x => x.is_console); }
+function isHibiki() {
+  const h = hibikiAssistant();
+  return !!(h && S.currentAssistant === h.id);
+}
+async function cmoApi(body) {
+  const { data: { session } } = await sb.auth.getSession();
+  return fetch(CMO_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify(body),
+  });
+}
+function updateHibikiBar() {
+  const on = isHibiki();
+  $("hibikiBar").style.display = on ? "block" : "none";
+  if (!on) { $("approvalView").style.display = "none"; $("gogyoView").style.display = "none"; }
+  if (on) { hibikiTab("chat"); refreshApvBadge(); }
+}
+function hibikiTab(tab) {
+  document.querySelectorAll("#hibikiBar .hb-tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  const chatOn = tab === "chat";
+  $("approvalView").style.display = tab === "approval" ? "flex" : "none";
+  $("gogyoView").style.display = tab === "gogyo" ? "flex" : "none";
+  if (chatOn) {
+    if (S.currentConv) { $("chatView").style.display = "flex"; $("emptyView").style.display = "none"; }
+    else { $("emptyView").style.display = "flex"; $("chatView").style.display = "none"; }
+  } else {
+    $("emptyView").style.display = "none"; $("chatView").style.display = "none";
+    if (tab === "approval") loadApprovals();
+    if (tab === "gogyo") loadGogyo();
+  }
+}
+document.querySelectorAll("#hibikiBar .hb-tabs button").forEach(b => b.addEventListener("click", () => hibikiTab(b.dataset.tab)));
+
+async function refreshApvBadge() {
+  try {
+    const res = await cmoApi({ action: "approvals_list" });
+    if (!res.ok) return;
+    const j = await res.json();
+    const n = (j.approvals || []).filter(a => a.status === "pending").length;
+    const el = $("hbApvBadge");
+    el.style.display = n ? "inline-block" : "none";
+    el.textContent = n;
+  } catch {}
+}
+
+const LANE_META = {
+  soul: { label: "魂 soul（創ちゃん）", c: "#7a1fa2" },
+  structure: { label: "骨 structure（ぐっさん）", c: "#2a6dd6" },
+  execution: { label: "血 execution（マーケッター）", c: "#e86a10" },
+};
+async function loadApprovals() {
+  const list = $("apvList");
+  list.innerHTML = '<p class="hb-note">読み込み中…</p>';
+  try {
+    const res = await cmoApi({ action: "approvals_list" });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || res.status);
+    $("apvLaneLabel").textContent = j.lane ? ("あなたのレーン: " + (LANE_META[j.lane] || {}).label) : "（あなたは決定者に登録されていません）";
+    list.innerHTML = "";
+    if (!j.approvals.length) { list.innerHTML = '<p class="hb-note">案件はありません。</p>'; return; }
+    for (const ap of j.approvals) list.appendChild(apvCard(ap));
+    refreshApvBadge();
+  } catch (e) {
+    list.innerHTML = '<p class="hb-note">読み込みに失敗しました: ' + esc(e.message) + '</p>';
+  }
+}
+function apvCard(ap) {
+  const p = ap.subject_payload || {};
+  const lane = LANE_META[ap.lane] || { label: ap.lane, c: "#9a9082" };
+  const card = document.createElement("div");
+  card.className = "apv-card";
+  const purity = p.purity || {};
+  const flags = purity.flags || [];
+  card.innerHTML =
+    `<div class="apv-top"><span class="apv-lane" style="background:${lane.c}">${esc(lane.label)}</span>` +
+    `<span class="apv-kind">${esc(ap.subject_type)}</span>` +
+    `<span class="apv-kind">by ${esc(ap.agent || "hibiki")}</span>` +
+    `<span class="apv-status">${esc(ap.status)}　${esc(new Date(ap.created_at).toLocaleString("ja-JP"))}</span></div>` +
+    `<div class="apv-title">${esc(p.title || "無題")}</div>` +
+    `<div class="apv-flags">` + (flags.length
+      ? flags.map(f => `<span>⚠ ${esc(f)}</span>`).join("")
+      : '<span class="apv-ok">✓ 純度レビュー通過（機械検査）</span>') + `</div>` +
+    `<div class="apv-body">${esc(p.content_md || "")}</div>` +
+    `<button class="apv-more">全文を表示</button>` +
+    (p.evidence_md ? `<div class="apv-evi">根拠: ${esc(p.evidence_md)}</div>` : "");
+  card.querySelector(".apv-more").addEventListener("click", (e) => {
+    card.querySelector(".apv-body").classList.toggle("open");
+    e.target.textContent = card.querySelector(".apv-body").classList.contains("open") ? "折りたたむ" : "全文を表示";
+  });
+  if (ap.status === "pending" || ap.status === "held") {
+    const acts = document.createElement("div");
+    acts.className = "apv-actions";
+    const ok = document.createElement("button");
+    ok.className = "approve"; ok.textContent = "承認";
+    ok.addEventListener("click", () => decide(ap.id, "approved", null, card));
+    const ng = document.createElement("button");
+    ng.className = "reject"; ng.textContent = "差し戻し";
+    const hold = document.createElement("button");
+    hold.textContent = "保留";
+    hold.addEventListener("click", () => decide(ap.id, "held", null, card));
+    acts.append(ok, ng, hold);
+    const box = document.createElement("div");
+    box.className = "apv-reject-box"; box.style.display = "none";
+    box.innerHTML = '<p class="hint">この理由はHIBIKIの学習に使われます（成長機構で最も価値の高い教材です）</p>' +
+      '<textarea placeholder="差し戻し理由（必須）"></textarea>';
+    const go = document.createElement("button");
+    go.className = "reject"; go.textContent = "この理由で差し戻す"; go.style.marginTop = "6px";
+    go.addEventListener("click", () => {
+      const r = box.querySelector("textarea").value.trim();
+      if (!r) { banner("差し戻しには理由が必須です"); return; }
+      decide(ap.id, "rejected", r, card);
+    });
+    box.appendChild(go);
+    ng.addEventListener("click", () => { box.style.display = box.style.display === "none" ? "block" : "none"; });
+    acts.appendChild(box);
+    card.appendChild(acts);
+  } else if (ap.reason) {
+    const r = document.createElement("div");
+    r.className = "apv-evi";
+    r.textContent = "差し戻し理由: " + ap.reason + (ap.decided_by ? "（" + ap.decided_by + "）" : "");
+    card.appendChild(r);
+  }
+  return card;
+}
+async function decide(id, decision, reason, card) {
+  try {
+    const res = await cmoApi({ action: "decide", approval_id: id, decision, reason });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || res.status);
+    banner(decision === "approved" ? "承認しました" : decision === "rejected" ? "差し戻しました（理由はHIBIKIの学習に還流します）" : "保留にしました");
+    loadApprovals();
+  } catch (e) { banner("エラー: " + e.message); }
+}
+
+const GOGYO_AGENTS = [
+  { key: "sns",        el: "水", nm: "観測手", c: "#2a6dd6", deg: -90 },
+  { key: "researcher", el: "木", nm: "調査官", c: "#1a7f64", deg: -18 },
+  { key: "writer",     el: "火", nm: "書き手", c: "#e86a10", deg: 54 },
+  { key: "lp",         el: "土", nm: "設計士", c: "#8a6d1f", deg: 126 },
+  { key: "analyst",    el: "金", nm: "分析官", c: "#9a9082", deg: 198 },
+];
+async function loadGogyo() {
+  const ring = $("gogyoRing");
+  ring.innerHTML = '<div class="gogyo-center">HIBIKI<br><span style="font-size:.68rem;color:#9a9082;">気の流れの設計者</span></div>';
+  let tasks = [];
+  try {
+    const res = await cmoApi({ action: "status" });
+    const j = await res.json();
+    if (res.ok) tasks = j.tasks || [];
+  } catch {}
+  const latest = {};
+  for (const t of tasks) if (!latest[t.agent]) latest[t.agent] = t;
+  for (const a of GOGYO_AGENTS) {
+    const rad = a.deg * Math.PI / 180;
+    const x = 50 + 42 * Math.cos(rad), y = 50 + 42 * Math.sin(rad);
+    const t = latest[a.key];
+    const st = !t ? ["st-idle", "待機"] :
+      t.status === "running" ? ["st-run", "稼働中"] :
+      t.status === "needs_clarification" ? ["st-clar", "確認待ち"] :
+      t.status === "failed" ? ["st-err", "エラー"] : ["st-idle", "待機"];
+    const node = document.createElement("div");
+    node.className = "gogyo-node";
+    node.style.left = x + "%"; node.style.top = y + "%";
+    node.innerHTML = `<span class="el" style="color:${a.c}">${a.el}</span><span class="nm">${a.nm}</span><span class="st ${st[0]}">${st[1]}</span>`;
+    ring.appendChild(node);
+  }
+  const done = tasks.slice(0, 10);
+  $("gogyoTasks").innerHTML = done.length
+    ? '<h2 class="hb-h" style="margin-top:10px;">直近のタスク</h2>' + done.map(t =>
+        `<p class="hb-note" style="margin-bottom:4px;">${esc(t.agent)}｜${esc(t.status)}｜${esc(new Date(t.created_at).toLocaleString("ja-JP"))}${t.tokens_used ? "｜" + t.tokens_used + " tokens" : ""}</p>`).join("")
+    : "";
+}
+
+/* ══════════ 会話表示 ══════════ */
+async function openConversation(id) {
+  if (S.streaming) return;
+  S.currentConv = id;
+  const conv = S.conversations.find(c => c.id === id);
+  S.currentAssistant = conv ? conv.assistant_id : null;
+  const res = await api({ action: "messages", conversation_id: id });
+  if (!res.ok) { banner("会話を読み込めませんでした"); return; }
+  const j = await res.json();
+  S.messages = j.messages.map(m => ({ role: m.role, content: m.content, model: m.model, sources: m.sources && m.sources.length ? m.sources : null }));
+  showChat(); updateHibikiBar(); renderMessages(); renderSidebar();
+  if (S.isMobile) { S.sbVisible = false; renderLayout(); }
+  scrollBottom(true);
+}
+
+function renderMessages() {
+  const el = $("chatInner");
+  el.innerHTML = "";
+  S.messages.forEach((m, i) => el.appendChild(renderMessage(m, i)));
+}
+function startEditMessage(container, m, idx) {
+  if (S.streaming) return;
+  container.innerHTML = "";
+  const ta = document.createElement("textarea");
+  ta.className = "edit-area"; ta.value = m.content; ta.style.width = "min(78%,760px)";
+  const btns = document.createElement("div");
+  btns.className = "edit-btns"; btns.style.width = "min(78%,760px)";
+  const save = document.createElement("button");
+  save.className = "save"; save.textContent = "この内容で再生成";
+  const cxl = document.createElement("button");
+  cxl.className = "cxl"; cxl.textContent = "キャンセル";
+  cxl.addEventListener("click", () => renderMessages());
+  save.addEventListener("click", () => {
+    const v = ta.value.trim();
+    if (!v) return;
+    // このユーザー発言以降を捨てて、編集後テキストで送り直す（追記型ログはサーバに残る）
+    S.messages = S.messages.slice(0, idx);
+    renderMessages();
+    send(v);
+  });
+  btns.append(cxl, save);
+  container.append(ta, btns);
+  ta.focus(); autoGrow(ta);
+  ta.addEventListener("input", () => autoGrow(ta));
+  ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.isComposing) { e.preventDefault(); save.click(); } });
+}
+
+function renderMessage(m, idx) {
+  if (m.role === "user") {
+    const d = document.createElement("div");
+    d.className = "msg-user";
+    d.style.flexDirection = "column"; d.style.alignItems = "flex-end";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = m.content;
+    d.appendChild(bubble);
+    if (!S.streaming) {
+      const acts = document.createElement("div");
+      acts.className = "msg-actions"; acts.style.paddingLeft = "0"; acts.style.paddingRight = "4px";
+      const edit = document.createElement("button");
+      edit.textContent = "編集して再生成";
+      edit.addEventListener("click", () => startEditMessage(d, m, idx));
+      acts.appendChild(edit);
+      d.appendChild(acts);
+    }
+    return d;
+  }
+  const model = ALL_MODELS.find(x => x.id === m.model) || currentModel();
+  const d = document.createElement("div");
+  d.className = "msg-ai";
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  meta.innerHTML = `<span class="chip" style="background:${model.c}">${model.g}</span><span class="mname">${esc(model.name)}</span>` +
+    (m.streaming ? '<span class="streaming-note">生成中…</span>' : "");
+  const body = document.createElement("div");
+  body.className = "body";
+  body.innerHTML = renderMarkdown(m.content) + (m.streaming ? '<span class="cursor"></span>' : "");
+  d.append(meta);
+  const toolList = m.tools || m.sources || [];
+  if (toolList.length) {
+    const t = document.createElement("div");
+    t.style.cssText = "padding-left:29px;font-family:'Noto Serif JP',serif;font-size:.74rem;letter-spacing:.08em;color:#9a9082;";
+    t.textContent = toolList.map(x => `🔎 ${x.source || x.name}「${x.query || ""}」` + (x.hits != null ? `（${x.hits}件）` : "")).join("　");
+    d.append(t);
+  }
+  d.append(body);
+  if (m.clarify) {
+    const cb = document.createElement("div");
+    cb.className = "clarify-box";
+    const q = document.createElement("p");
+    q.className = "q"; q.textContent = "❓ " + m.clarify.question;
+    cb.appendChild(q);
+    const opts = m.clarify.options.concat(["その他（自由入力で答える）"]);
+    opts.forEach((o, oi) => {
+      const b = document.createElement("button");
+      b.textContent = String.fromCharCode(65 + oi) + ". " + o;
+      b.addEventListener("click", () => {
+        if (S.streaming) return;
+        if (oi === m.clarify.options.length) { ($("chatInput")).focus(); return; }
+        send(o);
+      });
+      cb.appendChild(b);
+    });
+    d.appendChild(cb);
+  }
+  if (!m.streaming) {
+    const acts = document.createElement("div");
+    acts.className = "msg-actions";
+    const copy = document.createElement("button");
+    copy.textContent = "コピー";
+    copy.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(m.content); copy.textContent = "コピーしました"; setTimeout(() => copy.textContent = "コピー", 1600); } catch {}
+    });
+    const regen = document.createElement("button");
+    regen.textContent = "再生成";
+    regen.addEventListener("click", () => regenerate(idx));
+    acts.append(copy, regen);
+    d.appendChild(acts);
+  }
+  body.querySelectorAll("[data-preview]").forEach(btn => {
+    btn.addEventListener("click", () => openArtifact(decodeURIComponent(btn.dataset.preview)));
+  });
+  body.querySelectorAll("[data-code]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(decodeURIComponent(btn.dataset.code)); btn.textContent = "コピーしました"; setTimeout(() => btn.textContent = "コピー", 1600); } catch {}
+    });
+  });
+  return d;
+}
+
+/* 軽量 Markdown（見出し/箇条書き/コード/強調/インラインコード） */
+function inlineMd(s) {
+  return esc(s)
+    .replace(/`([^`]+)`/g, '<code class="inline">$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+}
+function renderMarkdown(text) {
+  const lines = String(text).split("\n");
+  let html = "", i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    const fence = line.match(/^```(\w*)/);
+    if (fence) {
+      const lang = fence[1] || "code";
+      const code = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) { code.push(lines[i]); i++; }
+      i++;
+      const codeText = code.join("\n");
+      const isDoc = /^html?$/i.test(lang) && /<!doctype|<html[\s>]/i.test(codeText);
+      html += `<div class="codeblock"><div class="bar"><span class="lang">${esc(lang)}</span><span style="display:flex;gap:14px;">` +
+        (isDoc ? `<button class="copy" data-preview="${encodeURIComponent(codeText)}">プレビュー</button>` : "") +
+        `<button class="copy" data-code="${encodeURIComponent(codeText)}">コピー</button></span></div>` +
+        `<pre>${esc(codeText)}</pre></div>`;
+      continue;
+    }
+    const h = line.match(/^(#{1,4})\s+(.*)/);
+    if (h) { html += `<h3>${inlineMd(h[2])}</h3>`; i++; continue; }
+    const li = line.match(/^\s*[-*・]\s+(.*)/) || line.match(/^\s*\d+\.\s+(.*)/);
+    if (li) { html += `<div class="li"><span class="bullet">・</span><span>${inlineMd(li[1])}</span></div>`; i++; continue; }
+    if (line.trim() === "") { i++; continue; }
+    // 連続する通常行を1段落に
+    const para = [line];
+    i++;
+    while (i < lines.length && lines[i].trim() !== "" && !/^(#{1,4}\s|```|\s*[-*・]\s|\s*\d+\.\s)/.test(lines[i])) { para.push(lines[i]); i++; }
+    html += `<p>${para.map(inlineMd).join("<br>")}</p>`;
+  }
+  return html;
+}
+
+function scrollBottom(force) {
+  const el = $("chatScroll");
+  if (force || el.scrollHeight - el.scrollTop - el.clientHeight < 200) el.scrollTop = el.scrollHeight;
+}
+
+/* ══════════ 送信（Claude API ストリーミング） ══════════ */
+function setSendStop(on) {
+  for (const id of ["emptySend", "chatSend"]) {
+    const b = $(id);
+    b.classList.toggle("stop", on);
+    b.title = on ? "生成を停止" : "送信";
+    b.innerHTML = on ? "■" : "→";
+    b.disabled = false;
+  }
+}
+function stopGenerating() { if (S.abort) { try { S.abort.abort(); } catch {} } }
+
+async function send(text) {
+  const t = (text != null ? text : ($("chatView").style.display !== "none" ? $("chatInput") : $("emptyInput")).value).trim();
+  if (!t || S.streaming) return;
+  $("emptyInput").value = ""; $("chatInput").value = "";
+  $("emptyInput").style.height = "auto"; $("chatInput").style.height = "auto";
+  S.streaming = true;
+  S.abort = new AbortController();
+  setSendStop(true);
+
+  S.messages.push({ role: "user", content: t });
+  S.messages.push({ role: "assistant", content: "", model: S.modelId, streaming: true });
+  showChat(); renderMessages(); scrollBottom(true);
+  const aiMsg = S.messages[S.messages.length - 1];
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const hibikiMode = isHibiki();
+    const res = await fetch(hibikiMode ? CMO_URL : API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "chat", conversation_id: S.currentConv, assistant_id: S.currentAssistant, model: S.modelId, text: t }),
+      signal: S.abort.signal,
+    });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      throw new Error(j.error || ("HTTP " + res.status));
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const parts = buf.split("\n\n");
+      buf = parts.pop();
+      for (const part of parts) {
+        const line = part.trim();
+        if (!line.startsWith("data:")) continue;
+        let ev;
+        try { ev = JSON.parse(line.slice(5)); } catch { continue; }
+        if (ev.type === "meta") {
+          if (!S.currentConv) {
+            S.currentConv = ev.conversation_id;
+            S.conversations.unshift({
+              id: ev.conversation_id, title: t.slice(0, 40), pinned: false,
+              assistant_id: S.currentAssistant,
+              created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+            });
+            renderSidebar();
+          }
+        } else if (ev.type === "delta") {
+          aiMsg.content += ev.text;
+          renderMessages(); scrollBottom(false);
+        } else if (ev.type === "tool") {
+          (aiMsg.tools = aiMsg.tools || []).push(ev);
+          renderMessages(); scrollBottom(false);
+        } else if (ev.type === "clarify") {
+          aiMsg.clarify = { question: ev.question, options: ev.options || [] };
+          renderMessages(); scrollBottom(false);
+        } else if (ev.type === "error") {
+          throw new Error(ev.message);
+        } else if (ev.type === "done") {
+          const conv = S.conversations.find(c => c.id === S.currentConv);
+          if (conv) conv.updated_at = new Date().toISOString();
+        }
+      }
+    }
+    aiMsg.streaming = false;
+  } catch (e) {
+    aiMsg.streaming = false;
+    if (e.name === "AbortError") {
+      if (!aiMsg.content) aiMsg.content = "（生成を停止しました）";
+    } else {
+      banner("エラー：" + e.message);
+      if (!aiMsg.content) aiMsg.content = "（応答を取得できませんでした：" + e.message + "）";
+    }
+  } finally {
+    S.streaming = false; S.abort = null;
+    setSendStop(false);
+    renderMessages(); renderSidebar(); scrollBottom(true);
+    const doc = (aiMsg.content.match(/```html\r?\n([\s\S]*?)```/i) || [])[1];
+    if (doc && /<!doctype|<html[\s>]/i.test(doc)) openArtifact(doc);
+  }
+}
+
+/* ══════════ アーティファクト（LP・スライド）プレビュー ══════════ */
+let currentArtifact = null;
+function artifactTitleOf(html) {
+  const m = String(html).match(/<title>([^<]*)<\/title>/i);
+  if (m && m[1].trim()) return m[1].trim().slice(0, 60);
+  const a = S.assistants.find(x => x.id === S.currentAssistant);
+  return (a ? a.name : "生成物") + " ドラフト";
+}
+function openArtifact(html, title) {
+  currentArtifact = { html, title: title || artifactTitleOf(html) };
+  $("artifactTitle").textContent = currentArtifact.title;
+  $("artifactFrame").srcdoc = html;
+  $("artifactPane").classList.add("open");
+}
+$("artifactClose").addEventListener("click", () => $("artifactPane").classList.remove("open"));
+$("artifactDl").addEventListener("click", () => {
+  if (!currentArtifact) return;
+  const blob = new Blob([currentArtifact.html], { type: "text/html;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = currentArtifact.title.replace(/[\/:*?"<>|]/g, "_") + ".html";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+});
+$("artifactSave").addEventListener("click", async () => {
+  if (!currentArtifact) return;
+  const kind = /スライド|slide/i.test(currentArtifact.title) ? "doc" : "lp";
+  const res = await api({ action: "save_artifact", conversation_id: S.currentConv, kind, title: currentArtifact.title, content: currentArtifact.html });
+  const j = await res.json().catch(() => ({}));
+  banner(res.ok ? `下書き保存しました（${currentArtifact.title} v${j.version}）` : "保存に失敗：" + (j.error || res.status));
+});
+
+$("artifactLearn").addEventListener("click", async () => {
+  if (!currentArtifact) return;
+  const kind = /スライド|slide/i.test(currentArtifact.title) ? "slide" : "lp";
+  const label = kind === "slide" ? "スライド" : "LP";
+  if (!confirm("この" + label + "を『手本』として学習させます。次回以降の" + label + "生成が、これを土台に作られるようになります。よろしいですか？")) return;
+  const btn = $("artifactLearn"); btn.textContent = "学習中…"; btn.disabled = true;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(INGEST_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "learn_artifact", kind, title: currentArtifact.title, content: currentArtifact.html }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j.error || ("HTTP " + res.status));
+    banner("手本として学習しました：「" + currentArtifact.title + "」。次回の" + label + "生成から反映されます。");
+  } catch (e) {
+    banner("学習に失敗：" + e.message);
+  } finally {
+    btn.textContent = "手本にする"; btn.disabled = false;
+  }
+});
+
+$("artifactPublish").addEventListener("click", async () => {
+  if (!currentArtifact) return;
+  if (!confirm("このLP/スライドを『誰でも見られる公開URL』として発行します。公開後はURLを知る人全員が閲覧できます。よろしいですか？")) return;
+  const kind = /スライド|slide/i.test(currentArtifact.title) ? "doc" : "lp";
+  const btn = $("artifactPublish"); btn.textContent = "発行中…"; btn.disabled = true;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(PUBLISH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "publish", conversation_id: S.currentConv, kind, title: currentArtifact.title, content: currentArtifact.html }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j.error || ("HTTP " + res.status));
+    currentArtifact.publishedUrl = j.url;
+    try { await navigator.clipboard.writeText(j.url); } catch {}
+    banner("公開しました（URLをコピーしました）: " + j.url);
+    window.open(j.url, "_blank");
+  } catch (e) {
+    banner("公開に失敗：" + e.message);
+  } finally {
+    btn.textContent = "公開URLを発行"; btn.disabled = false;
+  }
+});
+
+function regenerate(idx) {
+  if (S.streaming) return;
+  // 直前のユーザー発話を探して再送（append-only ログのため新しいターンとして記録される）
+  for (let i = idx - 1; i >= 0; i--) {
+    if (S.messages[i].role === "user") { send(S.messages[i].content); return; }
+  }
+}
+
+$("emptySend").addEventListener("click", () => { if (S.streaming) stopGenerating(); else send(); });
+$("chatSend").addEventListener("click", () => { if (S.streaming) stopGenerating(); else send(); });
+$("emptyInput").addEventListener("keydown", onComposerKey);
+$("emptyInput").addEventListener("input", e => autoGrow(e.target));
+$("chatInput").addEventListener("keydown", onComposerKey);
+$("chatInput").addEventListener("input", e => autoGrow(e.target));
+
+function onComposerKey(e) {
+  if (e.key !== "Enter") return;
+  if (e.shiftKey || e.ctrlKey || e.metaKey || e.isComposing) return; // 改行（変換確定中も送信しない）
+  e.preventDefault();
+  send();
+}
+function autoGrow(el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 200) + "px"; }
+
+function renderSuggestions() {
+  const el = $("suggestions");
+  el.innerHTML = "";
+  for (const s of SUGGESTIONS) {
+    const b = document.createElement("button");
+    b.className = "sug";
+    b.innerHTML = `<span class="dot" style="background:${s.c}"></span>${esc(s.t)}`;
+    b.addEventListener("click", () => send(s.t));
+    el.appendChild(b);
+  }
+}
+
+function renderAll() {
+  renderLayout(); renderSidebar(); renderModelBtn(); renderSuggestions(); showEmpty();
+}
+
+/* ══════════ ナレッジ取り込み（＋ボタン） ══════════ */
+function openIngest() { $("ingestMask").classList.add("open"); }
+function closeIngest() {
+  $("ingestMask").classList.remove("open");
+  $("ingestTitle").value = ""; $("ingestText").value = ""; $("ingestFile").value = "";
+  $("ingestDrop").textContent = "クリックしてファイルを選ぶ／ここにドラッグ";
+}
+document.querySelectorAll(".ingest-btn").forEach(b => b.addEventListener("click", openIngest));
+$("ingestCancel").addEventListener("click", closeIngest);
+$("ingestMask").addEventListener("click", e => { if (e.target === $("ingestMask")) closeIngest(); });
+$("ingestDrop").addEventListener("click", () => $("ingestFile").click());
+function loadFile(file) {
+  if (!file) return;
+  if (!$("ingestTitle").value) $("ingestTitle").value = file.name.replace(/[.][^.]+$/, "");
+  if (/[.]html?$/i.test(file.name)) $("ingestTag").value = "lp";
+  const r = new FileReader();
+  r.onload = () => { $("ingestText").value = r.result; $("ingestDrop").textContent = "読み込み: " + file.name; };
+  r.readAsText(file);
+}
+$("ingestFile").addEventListener("change", e => loadFile(e.target.files[0]));
+$("ingestDrop").addEventListener("dragover", e => { e.preventDefault(); $("ingestDrop").style.borderColor = "#e86a10"; });
+$("ingestDrop").addEventListener("dragleave", () => { $("ingestDrop").style.borderColor = ""; });
+$("ingestDrop").addEventListener("drop", e => { e.preventDefault(); $("ingestDrop").style.borderColor = ""; loadFile(e.dataTransfer.files[0]); });
+$("ingestGo").addEventListener("click", async () => {
+  const title = $("ingestTitle").value.trim();
+  const text = $("ingestText").value.trim();
+  const tag = $("ingestTag").value;
+  const fname = ($("ingestFile").files[0] || {}).name || "";
+  if (!text) { banner("取り込む内容がありません"); return; }
+  const btn = $("ingestGo"); btn.textContent = "取り込み中…"; btn.disabled = true;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(INGEST_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "ingest", title, tag, filename: fname, text }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(j.error || ("HTTP " + res.status));
+    banner("ナレッジに取り込みました：「" + j.title + "」（" + j.chunks + "チャンク）");
+    closeIngest();
+  } catch (e) {
+    banner("取り込み失敗：" + e.message);
+  } finally {
+    btn.textContent = "取り込む"; btn.disabled = false;
+  }
+});
+
+
+init();
+</script>
+</body>
+</html>
