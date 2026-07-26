@@ -243,6 +243,9 @@
         <button data-tab="chat" class="on">対話</button>
         <button data-tab="approval">承認 <span id="hbApvBadge" class="hb-badge" style="display:none;"></span></button>
         <button data-tab="gogyo">五行</button>
+        <button data-tab="numbers">数字</button>
+        <button data-tab="research">観測</button>
+        <button data-tab="growth">成長</button>
       </div>
     </div>
 
@@ -289,6 +292,68 @@
         <p class="hb-note">実線＝相生（パイプライン順序：水→木→火→土→金→水）。水剋火＝コピーは観測・分析の根拠と突合してから承認へ。</p>
         <div class="gogyo-ring" id="gogyoRing"></div>
         <div id="gogyoTasks"></div>
+      </div>
+    </main>
+
+    <main class="hbpane" id="numbersView" style="display:none;">
+      <div class="hb-scroll">
+        <h2 class="hb-h">数字 — 集計のみ（個人は見えない設計）</h2>
+        <p class="hb-note">プロモーション成績を手入力すると、時系列比較・段別の歩留まり分析・週次PDCAが効きはじめます。ファネル件数は個人を特定しないため、そのまま記録されます。</p>
+        <div class="apv-card">
+          <div class="apv-title">ファネル手入力</div>
+          <div class="fe-row"><input id="fePromo" placeholder="プロモ名（例：銀河人）" style="flex:2;"><input id="feDate" type="date" style="flex:1;"></div>
+          <div id="feStages"></div>
+          <div class="fe-row"><button class="apv-more" id="feAddStage">＋ 段階を追加</button><span style="flex:1"></span><button class="fe-go" id="feGo">記録する（追記型）</button></div>
+        </div>
+        <h2 class="hb-h" style="margin-top:18px;">プロモーション・ファネル</h2>
+        <div id="numFunnel"></div>
+        <h2 class="hb-h" style="margin-top:18px;">チャネル週次成績</h2>
+        <div id="numChannels"></div>
+        <h2 class="hb-h" style="margin-top:18px;">直近の週次PDCA</h2>
+        <div id="numPdca"></div>
+      </div>
+    </main>
+
+    <main class="hbpane" id="researchView" style="display:none;">
+      <div class="hb-scroll">
+        <h2 class="hb-h">観測 — 水（リサーチャー）</h2>
+        <p class="hb-note">外部から仮説、内部で検証。モデルケースからは<b>構造</b>だけを抜き、因果は自アカウントの実測で確かめます。ここに出るのは集計のみで、投稿・配信の操作はありません。</p>
+
+        <h2 class="hb-h" style="margin-top:14px;">収集状況</h2>
+        <div id="rsOverview"></div>
+
+        <h2 class="hb-h" style="margin-top:18px;">指標カバレッジ — <span class="hb-sub">どの指標が実際に動いているか</span></h2>
+        <p class="hb-note"><b>nonzero が 0 の指標は、取得できていても分析には使えません。</b>取れない指標を前提に設計しないための表です。</p>
+        <div id="rsCoverage"></div>
+
+        <h2 class="hb-h" style="margin-top:18px;">モデルケース <span class="hb-sub">（承認ゲート①）</span></h2>
+        <p class="hb-note">収集対象になるのは <b>approved</b> のみです。候補のままの相手は見に行きません。</p>
+        <div id="rsCases"></div>
+
+        <h2 class="hb-h" style="margin-top:18px;">伸びた投稿 <span class="hb-sub">（リツイート除外・最新スナップショット）</span></h2>
+        <div id="rsPosts"></div>
+
+        <h2 class="hb-h" style="margin-top:18px;">フォロワー推移</h2>
+        <p class="hb-note">投稿単位のフォロー転換は API で取れないため、日次のフォロワー数の差分が唯一の観測手段です。</p>
+        <div id="rsFollowers"></div>
+
+        <h2 class="hb-h" style="margin-top:18px;">構文指紋 <span class="hb-sub" id="rsFpVersion"></span></h2>
+        <p class="hb-note">モデルケースからは<b>構造</b>だけを抜きます。自アカウントの指紋と並べると、真似すべき差分が見えます。行分解は Claude、集計は決定論的な計算なので<b>同じ入力なら同じ指紋</b>になります。</p>
+        <div id="rsFingerprints"></div>
+
+        <h2 class="hb-h" style="margin-top:18px;">分析成果物</h2>
+        <div id="rsArtifacts"></div>
+      </div>
+    </main>
+
+    <main class="hbpane" id="growthView" style="display:none;">
+      <div class="hb-scroll">
+        <h2 class="hb-h">成長 — HIBIKIの学習を人間が決める</h2>
+        <p class="hb-note">成長候補（週次内省の起案）と蒸留物（創ちゃんの思想の型）を○×で判定します。<b>判定できるのは soul（創ちゃん）のみ・代理不可</b>。×の理由は再提案の条件になります。自動適用はありません。</p>
+        <h2 class="hb-h">成長候補</h2>
+        <div id="growthList"></div>
+        <h2 class="hb-h" style="margin-top:18px;">蒸留物（ソウルの型）</h2>
+        <div id="extractList"></div>
       </div>
     </main>
   </div>
@@ -340,6 +405,21 @@
   .clarify-box .q{font-size:.86rem;color:#2a4a80;margin-bottom:8px;line-height:1.8;}
   .clarify-box button{display:block;width:100%;text-align:left;margin:5px 0;padding:8px 12px;border:1px solid rgba(42,109,214,.4);border-radius:7px;background:#fff;color:#1a3a66;font-size:.84rem;cursor:pointer;}
   .clarify-box button:hover{background:#e8f0fe;}
+  .fe-row{display:flex;gap:8px;margin:8px 0;align-items:center;}
+  .fe-row input{border:1px solid rgba(0,0,0,.18);border-radius:7px;padding:8px 10px;font-size:.84rem;font-family:inherit;min-width:0;}
+  .fe-go{cursor:pointer;border-radius:7px;padding:8px 18px;font-size:.84rem;border:none;background:#b8860b;color:#fff;}
+  .num-table{width:100%;border-collapse:collapse;font-size:.8rem;background:#fff;border-radius:8px;overflow:hidden;}
+  .num-table th,.num-table td{border-bottom:1px solid rgba(0,0,0,.07);padding:7px 10px;text-align:left;}
+  .num-table th{background:#f5f0e6;color:#6b6455;font-weight:600;font-size:.72rem;letter-spacing:.06em;}
+  .gr-card{border:1px solid rgba(0,0,0,.1);border-radius:10px;background:#fff;padding:14px 16px;margin-bottom:12px;}
+  .gr-card .cat{display:inline-block;font-size:.7rem;color:#fff;background:#7a1fa2;border-radius:4px;padding:2px 8px;margin-right:8px;}
+  .gr-card .st-chip{display:inline-block;font-size:.7rem;border-radius:4px;padding:2px 8px;}
+  .gr-card .body-md{font-size:.84rem;line-height:1.9;color:#3c382f;margin:8px 0;white-space:pre-wrap;}
+  .gr-card .evi{font-size:.72rem;color:#9a9082;background:#faf7f0;border-radius:6px;padding:6px 10px;margin:6px 0;}
+  .gr-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+  .gr-actions button{cursor:pointer;border-radius:7px;padding:6px 16px;font-size:.84rem;border:1px solid rgba(0,0,0,.15);background:#fff;}
+  .gr-actions .ok{background:#1a7f64;border-color:#1a7f64;color:#fff;}
+  .gr-actions .ng{border-color:#c62828;color:#c62828;}
 </style>
 
 <div class="artifact-pane" id="artifactPane">
@@ -404,6 +484,7 @@ const API_URL = SUPABASE_URL + "/functions/v1/studio-api";
 const PUBLISH_URL = SUPABASE_URL + "/functions/v1/studio-publish";
 const INGEST_URL = SUPABASE_URL + "/functions/v1/studio-ingest";
 const CMO_URL = SUPABASE_URL + "/functions/v1/cmo-orchestrator";
+const RESEARCH_URL = SUPABASE_URL + "/functions/v1/cmo-research";
 
 const MODEL_GROUPS = [
   { label: "Claude（主・JUNDOのバックボーン）", items: [
@@ -760,6 +841,9 @@ function hibikiTab(tab) {
   const chatOn = tab === "chat";
   $("approvalView").style.display = tab === "approval" ? "flex" : "none";
   $("gogyoView").style.display = tab === "gogyo" ? "flex" : "none";
+  $("numbersView").style.display = tab === "numbers" ? "flex" : "none";
+  $("researchView").style.display = tab === "research" ? "flex" : "none";
+  $("growthView").style.display = tab === "growth" ? "flex" : "none";
   if (chatOn) {
     if (S.currentConv) { $("chatView").style.display = "flex"; $("emptyView").style.display = "none"; }
     else { $("emptyView").style.display = "flex"; $("chatView").style.display = "none"; }
@@ -767,6 +851,9 @@ function hibikiTab(tab) {
     $("emptyView").style.display = "none"; $("chatView").style.display = "none";
     if (tab === "approval") loadApprovals();
     if (tab === "gogyo") loadGogyo();
+    if (tab === "numbers") loadNumbers();
+    if (tab === "research") loadResearch();
+    if (tab === "growth") loadGrowth();
   }
 }
 document.querySelectorAll("#hibikiBar .hb-tabs button").forEach(b => b.addEventListener("click", () => hibikiTab(b.dataset.tab)));
@@ -827,6 +914,21 @@ function apvCard(ap) {
     card.querySelector(".apv-body").classList.toggle("open");
     e.target.textContent = card.querySelector(".apv-body").classList.contains("open") ? "折りたたむ" : "全文を表示";
   });
+  if (p.lp_id) {
+    const pv = document.createElement("button");
+    pv.className = "apv-more"; pv.style.marginLeft = "14px"; pv.textContent = "LPをプレビュー";
+    pv.addEventListener("click", async () => {
+      pv.textContent = "読み込み中…";
+      try {
+        const res = await cmoApi({ action: "lp_get", lp_id: p.lp_id });
+        const j2 = await res.json();
+        if (!res.ok) throw new Error(j2.error || res.status);
+        openArtifact(j2.html, j2.title + "（draft・未公開）");
+      } catch (e) { banner("プレビュー失敗: " + e.message); }
+      finally { pv.textContent = "LPをプレビュー"; }
+    });
+    card.querySelector(".apv-more").after(pv);
+  }
   if (ap.status === "pending" || ap.status === "held") {
     const acts = document.createElement("div");
     acts.className = "apv-actions";
@@ -909,6 +1011,280 @@ async function loadGogyo() {
     ? '<h2 class="hb-h" style="margin-top:10px;">直近のタスク</h2>' + done.map(t =>
         `<p class="hb-note" style="margin-bottom:4px;">${esc(t.agent)}｜${esc(t.status)}｜${esc(new Date(t.created_at).toLocaleString("ja-JP"))}${t.tokens_used ? "｜" + t.tokens_used + " tokens" : ""}</p>`).join("")
     : "";
+}
+
+/* ══════════ 数字タブ ══════════ */
+const FE_DEFAULT_STAGES = ["セミナー申込", "参加", "個別", "消化", "成約"];
+function feStageRow(name, val) {
+  const row = document.createElement("div");
+  row.className = "fe-row";
+  row.innerHTML = `<input class="fe-name" placeholder="段階名" value="${esc(name || "")}" style="flex:2;"><input class="fe-val" type="number" min="0" placeholder="件数" value="${val != null ? esc(String(val)) : ""}" style="flex:1;">`;
+  return row;
+}
+function feInit() {
+  const box = $("feStages");
+  if (box.children.length) return;
+  FE_DEFAULT_STAGES.forEach(s => box.appendChild(feStageRow(s)));
+}
+$("feAddStage").addEventListener("click", () => $("feStages").appendChild(feStageRow("")));
+$("feGo").addEventListener("click", async () => {
+  const promo = $("fePromo").value.trim();
+  const stages = {};
+  const stageOrder = [];
+  $("feStages").querySelectorAll(".fe-row").forEach(r => {
+    const k = r.querySelector(".fe-name").value.trim();
+    const v = r.querySelector(".fe-val").value;
+    if (k && v !== "") { stages[k] = Number(v); stageOrder.push(k); }
+  });
+  if (!promo || !Object.keys(stages).length) { banner("プロモ名と1つ以上の段階件数を入れてください"); return; }
+  const btn = $("feGo"); btn.disabled = true; btn.textContent = "記録中…";
+  try {
+    const res = await cmoApi({ action: "funnel_entry", promo_name: promo, observed_on: $("feDate").value || undefined, stages, stage_order: stageOrder });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || res.status);
+    banner("記録しました（追記型なので過去分は消えません）");
+    loadNumbers();
+  } catch (e) { banner("エラー: " + e.message); }
+  finally { btn.disabled = false; btn.textContent = "記録する（追記型）"; }
+});
+async function loadNumbers() {
+  feInit();
+  $("numFunnel").innerHTML = '<p class="hb-note">読み込み中…</p>';
+  try {
+    const res = await cmoApi({ action: "numbers" });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || res.status);
+    if (!j.funnel.length) $("numFunnel").innerHTML = '<p class="hb-note">まだ入力がありません。上のフォームから最初のプロモーション成績を入れてください。</p>';
+    else {
+      const rows = j.funnel.map(f => {
+        const stages = f.stages || {};
+        const keys = (Array.isArray(stages.__order) ? stages.__order : Object.keys(stages)).filter(k => k !== "__order");
+        const parts = keys.map((k, i) => {
+          const v = Number(stages[k]);
+          if (i === 0) return `${esc(k)} <b>${esc(String(v))}</b>`;
+          const prev = Number(stages[keys[i - 1]]);
+          const pct = prev > 0 ? Math.round(v / prev * 1000) / 10 : null;
+          return `${esc(k)} <b>${esc(String(v))}</b>${pct != null ? `<span style="color:#b8860b;font-size:.72rem;">（${pct}%）</span>` : ""}`;
+        });
+        return `<tr><td>${esc(f.promo_name)}</td><td>${esc(String(f.observed_on))}</td><td>${parts.join(" → ")}</td><td>${esc(f.source)}</td></tr>`;
+      }).join("");
+      $("numFunnel").innerHTML = `<div style="overflow-x:auto;"><table class="num-table"><tr><th>プロモ</th><th>観測日</th><th>ファネル</th><th>入力元</th></tr>${rows}</table></div>`;
+    }
+    if (!j.channels.length) $("numChannels").innerHTML = '<p class="hb-note">チャネルメトリクスはまだありません。</p>';
+    else {
+      const rows = j.channels.map(c =>
+        `<tr><td>${esc(c.channel)}</td><td>${esc(String(c.week))}</td><td>${esc(String(c.posts))}</td><td>${c.avg_views != null ? esc(String(c.avg_views)) : "—"}</td><td>${c.engagement_rate_pct != null ? esc(String(c.engagement_rate_pct)) + "%" : "—"}</td></tr>`).join("");
+      $("numChannels").innerHTML = `<div style="overflow-x:auto;"><table class="num-table"><tr><th>チャネル</th><th>週</th><th>投稿/配信数</th><th>平均閲覧/配信</th><th>反応率</th></tr>${rows}</table></div>`;
+    }
+    $("numPdca").innerHTML = j.pdca.length
+      ? j.pdca.map(p => `<div class="gr-card"><span class="st-chip" style="background:#f5f0e6;color:#6b6455;">${esc(String(p.period))}</span><div class="body-md">${esc(p.review_md).slice(0, 2000)}</div></div>`).join("")
+      : '<p class="hb-note">まだありません（毎週月曜9時に自動起案され、ChatWorkにも届きます）。</p>';
+  } catch (e) {
+    $("numFunnel").innerHTML = '<p class="hb-note">読み込みに失敗: ' + esc(e.message) + '</p>';
+  }
+}
+
+/* ══════════ 観測タブ（リサーチャー） ══════════ */
+const RS_METRIC_LABEL = {
+  impressions: "インプレッション", likes: "いいね", replies: "リプライ",
+  reposts: "リポスト", quotes: "引用", shares: "シェア", clicks: "クリック",
+  bookmarks: "保存（ブックマーク）", profile_clicks: "プロフクリック", link_clicks: "リンククリック",
+};
+/* 本命指標。取れない場合の代理はプラットフォームごとに違う */
+const RS_KEY_METRICS = ["bookmarks", "profile_clicks", "link_clicks"];
+
+function rsTable(head, rows) {
+  return '<div style="overflow-x:auto;"><table class="num-table"><tr>' +
+    head.map(h => `<th>${esc(h)}</th>`).join("") + "</tr>" + rows + "</table></div>";
+}
+function rsNum(v) { return v == null ? "—" : esc(String(v)); }
+/* 構成比を割合順に並べた横棒で見せる。数字の羅列より差分が目で分かる */
+function rsBars(obj) {
+  if (!obj || typeof obj !== "object") return "—";
+  const keys = Object.keys(obj).filter(k => Number(obj[k]) > 0).sort((a, b) => obj[b] - obj[a]);
+  if (!keys.length) return "—";
+  return keys.slice(0, 8).map(k => {
+    const p = Math.round(obj[k] * 1000) / 10;
+    return `<div style="display:flex;align-items:center;gap:6px;margin:2px 0;">
+      <span style="min-width:96px;font-size:.74rem;">${esc(k)}</span>
+      <span style="flex:1;background:#f0ece2;border-radius:3px;height:9px;overflow:hidden;max-width:160px;">
+        <span style="display:block;height:100%;width:${p}%;background:#b8860b;"></span></span>
+      <span style="font-size:.72rem;color:#6b6455;">${p}%</span></div>`;
+  }).join("");
+}
+function rsDate(v) { return v ? esc(String(v).slice(0, 10)) : "—"; }
+
+async function loadResearch() {
+  const boxes = ["rsOverview", "rsCoverage", "rsCases", "rsPosts", "rsFollowers", "rsArtifacts"];
+  $("rsOverview").innerHTML = '<p class="hb-note">読み込み中…</p>';
+  boxes.slice(1).forEach(b => $(b).innerHTML = "");
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(RESEARCH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "overview" }),
+    });
+    const j = await res.json();
+    if (!res.ok || !j.ok) throw new Error(j.error || res.status);
+
+    /* ---- 収集状況 ---- */
+    $("rsOverview").innerHTML = j.overview.length
+      ? rsTable(["プラットフォーム", "投稿", "自投稿", "モデルケース", "手動投入", "最古", "最新", "最終計測", "スナップショット"],
+          j.overview.map(o => `<tr><td><b>${esc(o.platform)}</b></td><td>${rsNum(o.posts)}</td><td>${rsNum(o.own_posts)}</td><td>${rsNum(o.model_posts)}</td><td>${rsNum(o.manual_posts)}</td><td>${rsDate(o.oldest_post)}</td><td>${rsDate(o.newest_post)}</td><td>${rsDate(o.last_captured)}</td><td>${rsNum(o.snapshots)}</td></tr>`).join(""))
+      : '<p class="hb-note">まだ収集がありません。</p>';
+
+    /* ---- 指標カバレッジ（この画面の主役） ---- */
+    if (!j.coverage.length) $("rsCoverage").innerHTML = '<p class="hb-note">まだ計測がありません。</p>';
+    else {
+      const byPf = {};
+      j.coverage.forEach(c => { (byPf[c.platform] = byPf[c.platform] || []).push(c); });
+      $("rsCoverage").innerHTML = Object.keys(byPf).sort().map(pf => {
+        const rows = byPf[pf].map(c => {
+          const dead = Number(c.nonzero) === 0;
+          const unavailable = Number(c.filled) === 0;
+          const key = RS_KEY_METRICS.includes(c.metric);
+          const state = unavailable
+            ? '<span class="st-chip" style="background:#f5f0e6;color:#8a8378;">取得不可</span>'
+            : dead
+              ? '<span class="st-chip" style="background:#fbe9e7;color:#c62828;">動かない</span>'
+              : '<span class="st-chip" style="background:#e8f5e9;color:#1a7f64;">動く</span>';
+          return `<tr${dead ? ' style="opacity:.62;"' : ""}><td>${esc(RS_METRIC_LABEL[c.metric] || c.metric)}${key ? ' <b style="color:#b8860b;">★</b>' : ""}</td><td>${state}</td><td>${rsNum(c.filled)}/${rsNum(c.posts)}</td><td>${rsNum(c.nonzero)}</td><td>${rsNum(c.total)}</td></tr>`;
+        }).join("");
+        const alive = byPf[pf].filter(c => Number(c.nonzero) > 0).length;
+        return `<h2 class="hb-h" style="margin-top:12px;font-size:.92rem;">${esc(pf)} <span class="hb-sub">動いている指標 ${alive} / ${byPf[pf].length}</span></h2>` +
+          rsTable(["指標", "判定", "値が返った", "0より大", "合計"], rows);
+      }).join("") +
+      '<p class="hb-note" style="margin-top:8px;">★ は二重ループの検証側で使いたい本命指標です。「取得不可」＝APIがそもそも返さない／「動かない」＝返るが実データが全部ゼロ。</p>';
+    }
+
+    /* ---- モデルケース ---- */
+    const CASE_ST = { candidate: ["#fff3df", "#c05708", "候補"], approved: ["#e8f5e9", "#1a7f64", "承認済み"], retired: ["#f5f0e6", "#8a8378", "引退"] };
+    $("rsCases").innerHTML = j.model_cases.length
+      ? rsTable(["状態", "PF", "ハンドル", "表示名", "区分", "スコア"],
+          j.model_cases.map(c => {
+            const st = CASE_ST[c.status] || ["#f5f0e6", "#6b6455", c.status];
+            const total = c.score ? Object.keys(c.score).reduce((a, k) => a + (Number(c.score[k]) || 0), 0) : null;
+            return `<tr><td><span class="st-chip" style="background:${st[0]};color:${st[1]};">${esc(st[2])}</span></td><td>${esc(c.platform)}</td><td>@${esc(c.handle)}</td><td>${esc(c.display_name || "—")}</td><td>${esc(c.category || "—")}</td><td>${total != null ? esc(String(total)) + " / 25" : "—"}</td></tr>`;
+          }).join(""))
+      : '<p class="hb-note">モデルケースはまだ登録されていません。スカウトが候補を挙げ、人間が5人を承認するまで外部収集は動きません（same×2／adjacent×2／syntax_master×1）。</p>';
+
+    /* ---- 伸びた投稿 ---- */
+    $("rsPosts").innerHTML = j.top_posts.length
+      ? rsTable(["PF", "投稿者", "日付", "本文", "imp", "保存率", "いいね率", "プロフclick"],
+          j.top_posts.map(p => `<tr><td>${esc(p.platform)}</td><td>${esc(p.author)}</td><td>${rsDate(p.posted_at)}</td><td style="max-width:320px;">${esc(p.excerpt || "")}</td><td>${rsNum(p.impressions)}</td><td>${p.save_rate_pct != null ? esc(String(p.save_rate_pct)) + "%" : "—"}</td><td>${p.like_rate_pct != null ? esc(String(p.like_rate_pct)) + "%" : "—"}</td><td>${rsNum(p.profile_clicks)}</td></tr>`).join(""))
+      : '<p class="hb-note">まだ投稿がありません。</p>';
+
+    /* ---- フォロワー推移 ---- */
+    $("rsFollowers").innerHTML = j.followers.length
+      ? rsTable(["PF", "アカウント", "観測日", "フォロワー"],
+          j.followers.map(f => `<tr><td>${esc(f.platform)}</td><td>${esc(f.account)}</td><td>${rsDate(f.observed_on)}</td><td>${rsNum(f.followers)}</td></tr>`).join(""))
+      : '<p class="hb-note">まだ記録がありません。</p>';
+
+    /* ---- 構文指紋（画面①） ---- */
+    $("rsFpVersion").textContent = j.counts.latest_version ? "版 " + j.counts.latest_version : "";
+    const fps = j.fingerprints || [];
+    if (!fps.length) {
+      $("rsFingerprints").innerHTML = '<p class="hb-note">まだ生成されていません。構文解析師（週次・日曜夜）が行分解と指紋の集計を行います。</p>';
+    } else {
+      $("rsFingerprints").innerHTML = fps.map(f => {
+        const g = f.fingerprint || {};
+        const r = g.rhythm_patterns || {}, e = g.emotion_curves || {}, fu = g.funnel_pull || {};
+        const pct = v => v == null ? "—" : Math.round(v * 1000) / 10 + "%";
+        const num = v => v == null ? "—" : String(v);
+        return `<div class="gr-card">
+          <div class="apv-title">${esc(f.label)} <span class="hb-sub">n=${num(g.sample_size)}${g.builder_version ? " / " + esc(g.builder_version) : ""}</span></div>
+          <div style="overflow-x:auto;"><table class="num-table">
+            <tr><th>フック型</th><td>${rsBars(g.hook_distribution)}</td></tr>
+            <tr><th>感情の型</th><td>${rsBars(e.shape)}<div class="hb-note" style="margin-top:4px;">始点 ${num(e.avg_start)} → 終点 ${num(e.avg_end)} ／ 最低 ${num(e.avg_min)} ・ 最高 ${num(e.avg_max)} ／ 符号反転 ${num(e.avg_sign_flips)}回</div></td></tr>
+            <tr><th>行長の構成</th><td>${rsBars(r.line_length_mix)}<div class="hb-note" style="margin-top:4px;">平均 ${num(r.avg_line_count)}行・1行 ${num(r.avg_char_len)}字 ／ 書き出しが短行 ${pct((r.opening_line_class||{})["短"])} ／ 短行で締める ${pct(r.ends_short_rate)}</div></td></tr>
+            <tr><th>自己開示率</th><td>${pct(g.disclosure_rate)}</td></tr>
+            <tr><th>CTA率</th><td>${pct(g.cta_rate)}<span class="hb-sub"> ／ 最終行にCTA ${pct(fu.cta_at_last_line_rate)}</span></td></tr>
+            <tr><th>根拠提示率</th><td>${pct(fu.evidence_rate)}</td></tr>
+          </table></div>
+          ${(f.evidence && f.evidence.source_quotes || []).length
+            ? '<div class="hb-note" style="margin-top:6px;">根拠となった書き出し: ' +
+              f.evidence.source_quotes.slice(0, 3).map(q => "「" + esc(String(q).slice(0, 40)) + "」").join(" ") + "</div>"
+            : ""}
+        </div>`;
+      }).join("");
+    }
+
+    /* ---- 分析成果物 ---- */
+    const c = j.counts;
+    $("rsArtifacts").innerHTML =
+      `<div class="gr-card"><div class="body-md">構文指紋 <b>${rsNum(c.fingerprints)}</b> 件` +
+      (c.fingerprint_versions.length ? `（版: ${c.fingerprint_versions.map(esc).join(", ")}）` : "") +
+      ` ／ 語彙 <b>${rsNum(c.vocabulary)}</b> 件</div>` +
+      (Number(c.fingerprints) === 0
+        ? '<p class="hb-note">構文指紋は構文解析師（週次・Claude）が生成します。語彙は声の採掘師（週次・Grok / X Search）が採掘します。どちらもまだ動いていません。</p>'
+        : "") + "</div>";
+  } catch (e) {
+    $("rsOverview").innerHTML = '<p class="hb-note">読み込みに失敗: ' + esc(e.message) + "</p>";
+  }
+}
+
+/* ══════════ 成長タブ ══════════ */
+const GR_ST = { proposed: ["#fff3df", "#c05708", "判定待ち"], applied: ["#e8f5e9", "#1a7f64", "適用"], approved: ["#e8f5e9", "#1a7f64", "承認"], rejected: ["#fbe9e7", "#c62828", "却下"], rolled_back: ["#fbe9e7", "#c62828", "巻き戻し"] };
+function grStatusChip(st) {
+  const m = GR_ST[st] || ["#f0ede6", "#9a9082", st];
+  return `<span class="st-chip" style="background:${m[0]};color:${m[1]};">${esc(m[2])}</span>`;
+}
+function grCard(item, kind, canDecide) {
+  const card = document.createElement("div");
+  card.className = "gr-card";
+  const head = kind === "growth"
+    ? `<span class="cat" style="background:#2a6dd6;">${esc(item.agent)}</span>` + grStatusChip(item.status)
+    : `<span class="cat">${esc(item.category)}</span>` + grStatusChip(item.status);
+  const bodyText = kind === "growth" ? item.learning_md : item.extract_md;
+  const evi = kind === "growth"
+    ? "根拠: " + esc(JSON.stringify(item.evidence_refs)) + (item.behavior_change ? "\n変更内容: " + esc(item.behavior_change) : "") + (item.risk_note ? "\nリスク: " + esc(item.risk_note) : "")
+    : "出典: " + esc(JSON.stringify(item.source_refs)) + (item.pii_scrub_note ? "\nPIIスクラブ: " + esc(item.pii_scrub_note) : "");
+  card.innerHTML = head + `<div class="body-md">${esc(bodyText || "")}</div><div class="evi" style="white-space:pre-wrap;">${evi}</div>` +
+    (item.rejection_reason ? `<div class="evi">却下理由: ${esc(item.rejection_reason)}</div>` : "");
+  if (item.status === "proposed" && canDecide) {
+    const acts = document.createElement("div");
+    acts.className = "gr-actions";
+    const ok = document.createElement("button"); ok.className = "ok"; ok.textContent = "○ 承認";
+    ok.addEventListener("click", () => growthDecide(kind, item.id, "approve", null));
+    const ng = document.createElement("button"); ng.className = "ng"; ng.textContent = "× 却下";
+    ng.addEventListener("click", () => {
+      const r = prompt("却下の理由（HIBIKIの再提案条件になります）");
+      if (r && r.trim()) growthDecide(kind, item.id, "reject", r.trim());
+    });
+    acts.append(ok, ng);
+    card.appendChild(acts);
+  } else if (item.status === "proposed" && !canDecide) {
+    const p = document.createElement("p");
+    p.className = "hb-note"; p.textContent = "判定は soul（創ちゃん）のみ・代理不可";
+    card.appendChild(p);
+  }
+  return card;
+}
+async function growthDecide(kind, id, decision, reason) {
+  try {
+    const res = await cmoApi({ action: "growth_decide", kind, id, decision, reason });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || res.status);
+    banner(decision === "approve" ? "承認しました（HIBIKIに反映されます）" : "却下しました（理由は再提案の条件になります）");
+    loadGrowth();
+  } catch (e) { banner("エラー: " + e.message); }
+}
+async function loadGrowth() {
+  $("growthList").innerHTML = '<p class="hb-note">読み込み中…</p>';
+  try {
+    const res = await cmoApi({ action: "growth_list" });
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.error || res.status);
+    $("growthList").innerHTML = "";
+    $("extractList").innerHTML = "";
+    if (!j.growth.length) $("growthList").innerHTML = '<p class="hb-note">成長候補はまだありません（毎週月曜朝、今週の承認・差し戻し・確認履歴から自動起案されます）。</p>';
+    else j.growth.forEach(g => $("growthList").appendChild(grCard(g, "growth", j.can_decide)));
+    if (!j.extracts.length) $("extractList").innerHTML = '<p class="hb-note">蒸留物はまだありません。</p>';
+    else j.extracts.forEach(x => $("extractList").appendChild(grCard(x, "soul_extract", j.can_decide)));
+  } catch (e) {
+    $("growthList").innerHTML = '<p class="hb-note">読み込みに失敗: ' + esc(e.message) + '</p>';
+  }
 }
 
 /* ══════════ 会話表示 ══════════ */
@@ -1140,6 +1516,7 @@ async function send(text) {
         let ev;
         try { ev = JSON.parse(line.slice(5)); } catch { continue; }
         if (ev.type === "meta") {
+          if (ev.model) aiMsg.model = ev.model; // サーバー側の実モデル（HIBIKIは常にOpus）
           if (!S.currentConv) {
             S.currentConv = ev.conversation_id;
             S.conversations.unshift({
