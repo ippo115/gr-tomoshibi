@@ -411,6 +411,13 @@
   .num-table{width:100%;border-collapse:collapse;font-size:.8rem;background:#fff;border-radius:8px;overflow:hidden;}
   .num-table th,.num-table td{border-bottom:1px solid rgba(0,0,0,.07);padding:7px 10px;text-align:left;}
   .num-table th{background:#f5f0e6;color:#6b6455;font-weight:600;font-size:.72rem;letter-spacing:.06em;}
+  /* 回答内のマークダウン表。横に長い表はここだけスクロールさせ、本文は横スクロールさせない */
+  .tablewrap{overflow-x:auto;margin:10px 0;}
+  .md-table{border-collapse:collapse;font-size:.8rem;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;overflow:hidden;min-width:100%;}
+  .md-table th,.md-table td{border-bottom:1px solid rgba(0,0,0,.07);border-right:1px solid rgba(0,0,0,.05);padding:7px 11px;text-align:left;vertical-align:top;white-space:nowrap;}
+  .md-table th:last-child,.md-table td:last-child{border-right:none;}
+  .md-table tr:last-child td{border-bottom:none;}
+  .md-table th{background:#f5f0e6;color:#6b6455;font-weight:600;font-size:.73rem;letter-spacing:.05em;}
   .gr-card{border:1px solid rgba(0,0,0,.1);border-radius:10px;background:#fff;padding:14px 16px;margin-bottom:12px;}
   .gr-card .cat{display:inline-block;font-size:.7rem;color:#fff;background:#7a1fa2;border-radius:4px;padding:2px 8px;margin-right:8px;}
   .gr-card .st-chip{display:inline-block;font-size:.7rem;border-radius:4px;padding:2px 8px;}
@@ -1447,11 +1454,25 @@ function renderMarkdown(text) {
     if (h) { html += `<h3>${inlineMd(h[2])}</h3>`; i++; continue; }
     const li = line.match(/^\s*[-*・]\s+(.*)/) || line.match(/^\s*\d+\.\s+(.*)/);
     if (li) { html += `<div class="li"><span class="bullet">・</span><span>${inlineMd(li[1])}</span></div>`; i++; continue; }
+    // マークダウンの表。「| 見出し | …」の次行が「|---|---|」なら表として組む。
+    // これが無いと HIBIKI が返す比較表（自分 vs モデルケース等）が生のパイプのまま出る。
+    if (/^\s*\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+      const cells = (l) => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
+      const head = cells(line);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) { rows.push(cells(lines[i])); i++; }
+      html += '<div class="tablewrap"><table class="md-table"><tr>' +
+        head.map(c => `<th>${inlineMd(c)}</th>`).join("") + "</tr>" +
+        rows.map(r => "<tr>" + r.map(c => `<td>${inlineMd(c)}</td>`).join("") + "</tr>").join("") +
+        "</table></div>";
+      continue;
+    }
     if (line.trim() === "") { i++; continue; }
     // 連続する通常行を1段落に
     const para = [line];
     i++;
-    while (i < lines.length && lines[i].trim() !== "" && !/^(#{1,4}\s|```|\s*[-*・]\s|\s*\d+\.\s)/.test(lines[i])) { para.push(lines[i]); i++; }
+    while (i < lines.length && lines[i].trim() !== "" && !/^(#{1,4}\s|```|\s*[-*・]\s|\s*\d+\.\s|\s*\|)/.test(lines[i])) { para.push(lines[i]); i++; }
     html += `<p>${para.map(inlineMd).join("<br>")}</p>`;
   }
   return html;
